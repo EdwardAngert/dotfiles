@@ -56,6 +56,10 @@ if command -v nvim &>/dev/null; then
   alias v="nvim"
   alias vi="nvim"
   alias vim="nvim"
+  # Create a symlink just in case
+  if [ ! -L "$HOME/.local/bin/vi" ] && [ -d "$HOME/.local/bin" ] && [ -x "$(command -v nvim)" ]; then
+    ln -sf "$(command -v nvim)" "$HOME/.local/bin/vi" 2>/dev/null || true
+  fi
 fi
 
 # Git aliases (if git is installed)
@@ -93,6 +97,10 @@ if [ -n "$VSCODE_INJECTION" ] || [ -n "$CODER_WORKSPACE_ID" ]; then
   if [ -f "/usr/local/bin/nvim" ]; then
     export PATH="/usr/local/bin:$PATH"
   fi
+  
+  # Fix for vi/vim to use nvim - create aliases
+  alias vi='nvim'
+  alias vim='nvim'
   
   # Set SHELL environment variable to zsh explicitly for VS Code terminal
   export SHELL=$(which zsh)

@@ -291,8 +291,21 @@ else
       NVIM_DIR="$HOME/.local/bin"
       mkdir -p "$NVIM_DIR"
       
-      print_info "Downloading Neovim AppImage..."
-      if curl -L https://github.com/neovim/neovim/releases/latest/download/nvim.appimage -o "$NVIM_DIR/nvim"; then
+      print_info "Downloading Neovim binary package..."
+      if curl -L https://github.com/neovim/neovim/releases/download/v0.9.5/nvim-linux64.tar.gz -o "/tmp/nvim-linux64.tar.gz"; then
+        print_info "Extracting Neovim..."
+        mkdir -p "/tmp/nvim-extract"
+        tar xzf "/tmp/nvim-linux64.tar.gz" -C "/tmp/nvim-extract"
+        
+        # Copy the extracted files to the bin directory
+        cp -r "/tmp/nvim-extract/nvim-linux64/bin/"* "$NVIM_DIR/"
+        mkdir -p "$HOME/.local/share"
+        cp -r "/tmp/nvim-extract/nvim-linux64/share/nvim" "$HOME/.local/share/"
+        
+        # Cleanup
+        rm -rf "/tmp/nvim-extract" "/tmp/nvim-linux64.tar.gz"
+        
+        # Make executable
         chmod +x "$NVIM_DIR/nvim"
         
         # Add to PATH if not already there
