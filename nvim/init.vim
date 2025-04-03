@@ -71,6 +71,7 @@ if filereadable(expand('~/.vim/autoload/plug.vim')) || filereadable(expand('~/.l
         nvimtree = true,
         telescope = true,
         treesitter = true,
+        semantic_tokens = true,
         gitgutter = true,
       },
     })

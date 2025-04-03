@@ -8,6 +8,8 @@
   "editor.minimap.enabled": false,
   "workbench.colorTheme": "Catppuccin Mocha",
   "terminal.integrated.fontSize": 14,
+  "terminal.integrated.defaultProfile.osx": "zsh",
+  "terminal.integrated.defaultProfile.linux": "zsh",
   "files.trimTrailingWhitespace": true,
   "files.insertFinalNewline": true,
   "files.autoSave": "onFocusChange",

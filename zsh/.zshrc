@@ -82,6 +82,17 @@ alias ....="cd ../../.."
 
 # -------------- Environment Setup --------------
 
+# Support for VS Code Remote and Coder
+if [ -n "$VSCODE_INJECTION" ] || [ -n "$CODER_WORKSPACE_ID" ]; then
+  # Ensure PATH is set correctly for remote development
+  if [ -d "$HOME/.local/bin" ]; then
+    export PATH="$HOME/.local/bin:$PATH"
+  fi
+  
+  # Set SHELL environment variable to zsh explicitly for VS Code terminal
+  export SHELL=$(which zsh)
+fi
+
 # NVM setup (if installed)
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
