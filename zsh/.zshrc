@@ -89,6 +89,11 @@ if [ -n "$VSCODE_INJECTION" ] || [ -n "$CODER_WORKSPACE_ID" ]; then
     export PATH="$HOME/.local/bin:$PATH"
   fi
   
+  # Check for user-installed Neovim in common locations
+  if [ -f "/usr/local/bin/nvim" ]; then
+    export PATH="/usr/local/bin:$PATH"
+  fi
+  
   # Set SHELL environment variable to zsh explicitly for VS Code terminal
   export SHELL=$(which zsh)
 fi

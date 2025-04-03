@@ -40,6 +40,7 @@ if filereadable(expand('~/.vim/autoload/plug.vim')) || filereadable(expand('~/.l
   call plug#begin('~/.vim/plugged')
 
   Plug 'neoclide/coc.nvim', {'branch': 'release'}
+  let g:coc_disable_startup_warning = 1
   Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
   Plug 'nvim-lua/plenary.nvim'
   Plug 'nvim-telescope/telescope.nvim'

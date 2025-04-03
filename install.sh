@@ -141,19 +141,6 @@ fi
 
 print_info "Detected OS: $OS"
 
-# Configure git local settings
-print_info "Configuring git local settings..."
-if command -v git &>/dev/null; then
-  if [ -d ".git" ]; then
-    git config --local user.name "EdwardAngert"
-    git config --local user.email "17991901+EdwardAngert@users.noreply.github.com"
-    print_success "Git local config set successfully"
-  else
-    print_warning "Not a git repository. Skipping git configuration."
-  fi
-else
-  print_warning "Git not found. Skipping git configuration."
-fi
 
 # Create a flag file to detect if we're resuming after oh-my-zsh installation
 FLAG_FILE="/tmp/dotfiles_install_in_progress"
@@ -278,68 +265,113 @@ else
   fi
 
   # Install Neovim
-  if ! check_command nvim; then
-    print_info "Installing Neovim..."
+  NVIM_VERSION="0.9.5"  # Specify minimum required version
+  
+  # Function to check if current Neovim version is sufficient
+  check_nvim_version() {
+    local current_version=$(nvim --version | head -n1 | cut -d' ' -f2 | cut -c 2-)
+    if [ $(printf "%s\n%s" "$current_version" "$NVIM_VERSION" | sort -V | head -n1) = "$NVIM_VERSION" ]; then
+      # Current version is greater than or equal to required
+      return 0
+    else
+      return 1
+    fi
+  }
+  
+  if ! check_command nvim || ! check_nvim_version; then
+    print_info "Installing/Updating Neovim to v$NVIM_VERSION or newer..."
+    
     if [ "$OS" = "macOS" ]; then
       brew install neovim
     elif [ "$OS" = "Linux" ]; then
-      # Try to add Neovim repository for more recent versions on Ubuntu/Debian
-      if check_command apt-get; then
-        sudo apt-get update -y
+      # Always use the AppImage method for consistent version across all Linux distros
+      print_info "Installing latest Neovim using AppImage..."
+      
+      # Create directory for the AppImage
+      NVIM_DIR="$HOME/.local/bin"
+      mkdir -p "$NVIM_DIR"
+      
+      print_info "Downloading Neovim AppImage..."
+      if curl -L https://github.com/neovim/neovim/releases/latest/download/nvim.appimage -o "$NVIM_DIR/nvim"; then
+        chmod +x "$NVIM_DIR/nvim"
         
-        # First try to add the PPA if apt-add-repository exists
-        if command -v add-apt-repository &> /dev/null; then
-          print_info "Adding Neovim repository..."
-          sudo apt-get install -y software-properties-common
-          sudo add-apt-repository -y ppa:neovim-ppa/stable
-          sudo apt-get update -y
+        # Add to PATH if not already there
+        if [[ ":$PATH:" != *":$NVIM_DIR:"* ]]; then
+          echo "export PATH=\"\$PATH:$NVIM_DIR\"" >> "$HOME/.bashrc"
+          echo "export PATH=\"\$PATH:$NVIM_DIR\"" >> "$HOME/.profile"
+          if [ -f "$HOME/.zshrc" ]; then
+            echo "export PATH=\"\$PATH:$NVIM_DIR\"" >> "$HOME/.zshrc"
+          fi
+          export PATH="$PATH:$NVIM_DIR"
         fi
         
-        # Install Neovim
-        sudo apt-get install -y neovim
-      elif check_command dnf; then
-        sudo dnf install -y neovim
-      elif check_command pacman; then
-        sudo pacman -S --noconfirm neovim
-      elif check_command brew; then
-        brew install neovim
+        print_success "Neovim AppImage installed to $NVIM_DIR/nvim"
+        print_info "The PATH has been updated to include $NVIM_DIR"
       else
-        print_warning "Could not install Neovim through package manager. Attempting alternative installation..."
+        print_error "Failed to download Neovim AppImage."
         
-        # Alternative method - download AppImage (works on most Linux distros)
-        if command -v curl &> /dev/null; then
-          NVIM_DIR="$HOME/.local/bin"
-          mkdir -p "$NVIM_DIR"
+        # Fallback to package manager as last resort
+        print_info "Falling back to package manager installation..."
+        if check_command apt-get; then
+          # For Debian-based systems, use direct binary installation
+          print_info "Attempting direct installation of Neovim binary..."
           
-          print_info "Downloading Neovim AppImage..."
-          curl -L https://github.com/neovim/neovim/releases/latest/download/nvim.appimage -o "$NVIM_DIR/nvim"
-          chmod +x "$NVIM_DIR/nvim"
+          # Install dependencies
+          sudo apt-get update -y
+          sudo apt-get install -y curl wget unzip
           
-          # Add to PATH if not already there
-          if [[ ":$PATH:" != *":$NVIM_DIR:"* ]]; then
-            echo "export PATH=\"\$PATH:$NVIM_DIR\"" >> "$HOME/.bashrc"
-            echo "export PATH=\"\$PATH:$NVIM_DIR\"" >> "$HOME/.profile"
-            if [ -f "$HOME/.zshrc" ]; then
-              echo "export PATH=\"\$PATH:$NVIM_DIR\"" >> "$HOME/.zshrc"
-            fi
-            export PATH="$PATH:$NVIM_DIR"
+          # Create a temporary directory
+          TEMP_DIR=$(mktemp -d)
+          cd "$TEMP_DIR"
+          
+          # Download the prebuilt Neovim package
+          wget https://github.com/neovim/neovim/releases/download/stable/nvim-linux64.tar.gz
+          
+          # Extract the archive
+          tar xzf nvim-linux64.tar.gz
+          
+          # Install to /usr/local
+          sudo cp -r nvim-linux64/* /usr/local/
+          
+          # Clean up
+          cd - > /dev/null
+          rm -rf "$TEMP_DIR"
+          
+          # Verify installation
+          if command -v /usr/local/bin/nvim &> /dev/null; then
+            # Create symlink
+            sudo ln -sf /usr/local/bin/nvim /usr/bin/nvim
+            print_success "Neovim installed to /usr/local/bin/nvim"
+          else
+            # If direct install fails, try package manager
+            print_info "Direct installation failed, trying package repositories..."
+            sudo apt-get install -y software-properties-common
+            sudo add-apt-repository -y ppa:neovim-ppa/unstable  # Use unstable for newer versions
+            sudo apt-get update -y
+            sudo apt-get install -y neovim
           fi
-          
-          print_info "Neovim AppImage installed to $NVIM_DIR/nvim"
-          print_info "You may need to restart your terminal to use Neovim"
+        elif check_command dnf; then
+          sudo dnf install -y neovim
+        elif check_command pacman; then
+          sudo pacman -S --noconfirm neovim
+        elif check_command brew; then
+          brew install neovim
         else
-          print_error "curl is not available. Could not install Neovim."
+          print_error "Could not install Neovim through any method."
         fi
       fi
     fi
     
+    # Verify installation
     if check_command nvim; then
-      print_success "Neovim installed successfully"
+      nvim_installed_version=$(nvim --version | head -n1)
+      print_success "Neovim installed successfully: $nvim_installed_version"
     else
-      print_warning "Failed to install Neovim. The Neovim configuration will still be set up, but you'll need to install Neovim manually to use it."
+      print_error "Failed to install Neovim. The Neovim configuration will still be set up, but you'll need to install Neovim manually to use it."
     fi
   else
-    print_success "Neovim is already installed"
+    nvim_installed_version=$(nvim --version | head -n1)
+    print_success "Neovim v$nvim_installed_version is already installed and meets version requirements"
   fi
 
   # Install vim-plug for Neovim
@@ -607,6 +639,22 @@ END_TIME=$(date +%s)
 EXECUTION_TIME=$((END_TIME - START_TIME))
 MINUTES=$((EXECUTION_TIME / 60))
 SECONDS=$((EXECUTION_TIME % 60))
+
+# Configure git settings if in the dotfiles repo
+print_info "Configuring git settings..."
+if command -v git &>/dev/null; then
+  # Using the original repo directory - not a symlink path
+  if [ -d "$DOTFILES_DIR/.git" ]; then
+    cd "$DOTFILES_DIR"
+    git config --local user.name "EdwardAngert"
+    git config --local user.email "17991901+EdwardAngert@users.noreply.github.com"
+    print_success "Git config set successfully for the dotfiles repository"
+  else
+    print_warning "Not running in a git repository. Skipping git configuration."
+  fi
+else
+  print_warning "Git not found. Skipping git configuration."
+fi
 
 echo -e "\n${GREEN}All dotfiles have been linked!${NC}"
 print_info "Note: You may need to restart your terminal to see all changes."
