@@ -1,0 +1,612 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AlternateMouseScroll</key>
+	<true/>
+	<key>AppleAntiAliasingThreshold</key>
+	<integer>1</integer>
+	<key>ApplePressAndHoldEnabled</key>
+	<false/>
+	<key>AppleScrollAnimationEnabled</key>
+	<integer>0</integer>
+	<key>AppleSmoothFixedFontsSizeThreshold</key>
+	<integer>1</integer>
+	<key>AppleWindowTabbingMode</key>
+	<string>manual</string>
+	<key>Default Bookmark Guid</key>
+	<string>FCFC261C-5343-4DB7-AE48-F2DFB558E41E</string>
+	<key>HotkeyMigratedFromSingleToMulti</key>
+	<true/>
+	<key>LoadPrefsFromCustomFolder</key>
+	<true/>
+	<key>NSNavLastRootDirectory</key>
+	<string>~/dotfiles/iterm</string>
+	<key>NSNavPanelExpandedSizeForOpenMode</key>
+	<string>{712, 448}</string>
+	<key>NSQuotedKeystrokeBinding</key>
+	<string></string>
+	<key>NSRepeatCountBinding</key>
+	<string></string>
+	<key>NSScrollAnimationEnabled</key>
+	<false/>
+	<key>NSScrollViewShouldScrollUnderTitlebar</key>
+	<false/>
+	<key>NSTableView Columns v2 KeyBingingTable</key>
+	<data>
+	YnBsaXN0MDDUAQIDBAUGBwpYJHZlcnNpb25ZJGFyY2hpdmVyVCR0b3BYJG9iamVjdHMS
+	AAGGoF8QD05TS2V5ZWRBcmNoaXZlctEICVVBcnJheYABrgsMEx4fICEiIyQqNjg6PkBU
+	JG51bGzTDQ4PEBMWV05TLmtleXNaTlMub2JqZWN0c1YkY2xhc3OiERKAAoADohQVgASA
+	BYAHUHRhYlR0eXBlW2FsaWdubWVudHNfECZJQkNvY29hT3V0bGluZVZpZXdEaXNjbG9z
+	dXJlVHJpYW5nbGVLZXnTDQ4PHh8goKGiW05TLmtleXNabnMub2JqZWN0c1YkY2xhc3Om
+	ISIjJCUmgAaAB4AIgAmACoALgA1VTmFtZV8QEkFsdGVybmF0ZUdyb3VwTmFtZVhQcm9j
+	ZXNzSURfEA9Db21tYW5kTGluZUFyZ3NbQXJjaGl0ZWN0dXJlW0ZyYW1ld29ya05hbWXS
+	Dw8oKVokY2xhc3NuYW1lWCRjbGFzc2VzXE5TRGljdGlvbmFyeaIqK1hOU09iamVjdNIP
+	Dy0uXxAQSUJFeHBvc2VkQmluZGluZ12AQSBOT3V0bGluZVZpZXfSDw8wMVdOU0FycmF5
+	ojAr0g8PMzRfEBlJQkNvbm5lY3Rpb25Db29raWVXcmFwcGVyojUr0g8PNzdfEBVJQkNv
+	bHVtblJlc2l6aW5nU3R5bGWkODk6O15JQl9Qcm9wb3NlZEtleVxJQl9JdGVtSXNLZXlf
+	EBhJQl9BdXRvUmVzaXplRW5kQ29sdW1uc0tleV8QE0lCX0FwcEJ1aWx0SW5TdHlsZdIP
+	Dz0+W05TQ2xhc3NOYW1loj8rXxARSUJUYWJsZVZpZXdDZWxsUm93AAgAEQAaACQAKQAy
+	ADcASQBMAFEAUwBfAGUAcgB5AIAAhwCOAK8AtwDEAMYAyADKAMwAzgDQANIA2gDcAN4A
+	5QDsAPMA+gEGARABIQEsAS8BRgFNAVoBagFsAW4BcAFyAXQBdgF8AYABjQGYAaABxAHQ
+	AdwB3gHgAeIB7AHzAf4CAQIGAgsCGQIdAiUCKgAAAAAAAAACAQAAAAAAAABAAAAAAAAA
+	AAAAAAAAAAIx
+	</data>
+	<key>NSTableView Sort Ordering v2 KeyBingingTable</key>
+	<data>
+	YnBsaXN0MDDUAQIDBAUGBwpYJHZlcnNpb25ZJGFyY2hpdmVyVCR0b3BYJG9iamVjdHMS
+	AAGGoF8QD05TS2V5ZWRBcmNoaXZlctEICVVBcnJheYABowsMDVRrZXlzVHZhbHVlc1Ru
+	YW1lxAAVFhcYGRoVJG51bGzTCwwdHh9fECZJQkNvY29hT3V0bGluZVZpZXdEaXNjbG9z
+	dXJlVHJpYW5nbGVLZXlfEA9JQlN0YXR1c0l0ZW1LZXnSIiMkJVokY2xhc3NuYW1lWCRj
+	bGFzc2VzXU5TTXV0YWJsZURhdGGjJCYnXE5TTXV0YWJsZURhdGFWTlNEYXRhWE5TT2Jq
+	ZWN00iIjKSpeTlNNdXRhYmxlQXJyYXmjKSYrV05TQXJyYXkACAARABoAJAApADIANwBJ
+	AEwAUQBTAF8AZQBrAHMAdwB9AIUAjACRAJUAmwCgAKgAqgCsAK4AsACyALkAwgDOANAA
+	0gDaAOIA5wDsAPwBAQEFAAAAAAAAAgEAAAAAAAAALAAAAAAAAAAAAAAAAAAAAQg=
+	</data>
+	<key>NSTableView Supports v2 KeyBingingTable</key>
+	<true/>
+	<key>NSTouchBarConfig: regular</key>
+	<dict>
+		<key>CurrentItems</key>
+		<array>
+			<string>iTermTouchBarIdentifierManPage</string>
+			<string>NSTouchBarItemIdentifierFlexibleSpace</string>
+			<string>NSTouchBarItemIdentifierOtherItemsProxy</string>
+			<string>iTermTouchBarIdentifierStatus</string>
+			<string>iTermTouchBarIdentifierAddMark</string>
+			<string>iTermTouchBarIdentifierPreviousMark</string>
+			<string>iTermTouchBarIdentifierNextMark</string>
+		</array>
+		<key>DefaultItems</key>
+		<array>
+			<string>iTermTouchBarIdentifierManPage</string>
+			<string>NSTouchBarItemIdentifierFlexibleSpace</string>
+			<string>NSTouchBarItemIdentifierOtherItemsProxy</string>
+			<string>iTermTouchBarIdentifierStatus</string>
+			<string>iTermTouchBarIdentifierAddMark</string>
+			<string>iTermTouchBarIdentifierPreviousMark</string>
+			<string>iTermTouchBarIdentifierNextMark</string>
+		</array>
+	</dict>
+	<key>PrefsCustomFolder</key>
+	<string>~/dotfiles/iterm</string>
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
+	<key>SUFeedAlternateAppNameKey</key>
+	<string>iTerm</string>
+	<key>SUFeedURL</key>
+	<string>https://iterm2.com/appcasts/final.xml?shard=6</string>
+	<key>SUHasLaunchedBefore</key>
+	<true/>
+	<key>SULastCheckTime</key>
+	<date>2023-04-02T18:56:23Z</date>
+	<key>SUSendProfileInfo</key>
+	<false/>
+	<key>ShowFullScreenTabBar</key>
+	<false/>
+	<key>TabStyleWithAutomaticOption</key>
+	<integer>1</integer>
+	<key>findMode_iTerm</key>
+	<integer>0</integer>
+	<key>kCPKSelectionViewPreferredModeKey</key>
+	<integer>0</integer>
+	<key>kCPKSelectionViewShowHSBTextFieldsKey</key>
+	<false/>
+	<key>NoSyncHaveWarnedAboutPasteConfirmationChange</key>
+	<true/>
+	<key>NoSyncPermissionToShowTip</key>
+	<false/>
+	<key>NoSyncRecordedVariables</key>
+	<dict>
+		<key>0</key>
+		<array>
+			<dict>
+				<key>Action</key>
+				<integer>10</integer>
+				<key>Text</key>
+				<string>[1;6S</string>
+			</dict>
+		</array>
+		<key>1</key>
+		<array>
+			<dict>
+				<key>Action</key>
+				<integer>10</integer>
+				<key>Text</key>
+				<string>[1;5A</string>
+			</dict>
+		</array>
+		<key>10</key>
+		<array>
+			<dict>
+				<key>Action</key>
+				<integer>10</integer>
+				<key>Text</key>
+				<string>[1;5E</string>
+			</dict>
+		</array>
+		<key>11</key>
+		<array>
+			<dict>
+				<key>Action</key>
+				<integer>10</integer>
+				<key>Text</key>
+				<string>[1;3E</string>
+			</dict>
+		</array>
+		<key>12</key>
+		<array>
+			<dict>
+				<key>Action</key>
+				<integer>10</integer>
+				<key>Text</key>
+				<string>[1;6F</string>
+			</dict>
+		</array>
+		<key>13</key>
+		<array>
+			<dict>
+				<key>Action</key>
+				<integer>10</integer>
+				<key>Text</key>
+				<string>[1;3F</string>
+			</dict>
+		</array>
+		<key>14</key>
+		<array>
+			<dict>
+				<key>Action</key>
+				<integer>10</integer>
+				<key>Text</key>
+				<string>[1;6H</string>
+			</dict>
+		</array>
+		<key>2</key>
+		<array>
+			<dict>
+				<key>Action</key>
+				<integer>10</integer>
+				<key>Text</key>
+				<string>[1;5B</string>
+			</dict>
+		</array>
+		<key>3</key>
+		<array>
+			<dict>
+				<key>Action</key>
+				<integer>10</integer>
+				<key>Text</key>
+				<string>[1;5D</string>
+			</dict>
+		</array>
+		<key>4</key>
+		<array>
+			<dict>
+				<key>Action</key>
+				<integer>10</integer>
+				<key>Text</key>
+				<string>[1;5C</string>
+			</dict>
+		</array>
+		<key>5</key>
+		<array>
+			<dict>
+				<key>Action</key>
+				<integer>10</integer>
+				<key>Text</key>
+				<string>[1;3C</string>
+			</dict>
+		</array>
+		<key>6</key>
+		<array>
+			<dict>
+				<key>Action</key>
+				<integer>10</integer>
+				<key>Text</key>
+				<string>[1;3D</string>
+			</dict>
+		</array>
+		<key>7</key>
+		<array>
+			<dict>
+				<key>Action</key>
+				<integer>10</integer>
+				<key>Text</key>
+				<string>[1;3B</string>
+			</dict>
+		</array>
+		<key>8</key>
+		<array>
+			<dict>
+				<key>Action</key>
+				<integer>10</integer>
+				<key>Text</key>
+				<string>[1;3A</string>
+			</dict>
+		</array>
+		<key>9</key>
+		<array>
+			<dict>
+				<key>Action</key>
+				<integer>10</integer>
+				<key>Text</key>
+				<string>[1;3H</string>
+			</dict>
+		</array>
+	</dict>
+	"New Bookmarks" = (
+		{
+			"ASCII Anti Aliased" = 1;
+			"ASCII Ligatures" = 1;
+			"Allow Title Reporting" = 1;
+			"Ambiguous Double Width" = 0;
+			"Ansi 0 Color" = {
+				"Blue Component" = "0.2431372549";
+				"Green Component" = "0.1764705882";
+				"Red Component" = "0.1607843137";
+			};
+			"Ansi 1 Color" = {
+				"Blue Component" = "0.6705882353";
+				"Green Component" = "0.4784313725";
+				"Red Component" = "0.9647058824";
+			};
+			"Ansi 10 Color" = {
+				"Blue Component" = "0.6196078431";
+				"Green Component" = "0.9254901961";
+				"Red Component" = "0.6627450980";
+			};
+			"Ansi 11 Color" = {
+				"Blue Component" = "0.5607843137";
+				"Green Component" = "0.9019607843";
+				"Red Component" = "0.9647058824";
+			};
+			"Ansi 12 Color" = {
+				"Blue Component" = "0.9803921569";
+				"Green Component" = "0.6666666667";
+				"Red Component" = "0.5098039216";
+			};
+			"Ansi 13 Color" = {
+				"Blue Component" = "0.9568627451";
+				"Green Component" = "0.5764705882";
+				"Red Component" = "0.8274509804";
+			};
+			"Ansi 14 Color" = {
+				"Blue Component" = "0.9529411765";
+				"Green Component" = "0.8980392157";
+				"Red Component" = "0.5294117647";
+			};
+			"Ansi 15 Color" = {
+				"Blue Component" = "0.9803921569";
+				"Green Component" = "0.9411764706";
+				"Red Component" = "0.9254901961";
+			};
+			"Ansi 2 Color" = {
+				"Blue Component" = "0.6196078431";
+				"Green Component" = "0.9254901961";
+				"Red Component" = "0.6627450980";
+			};
+			"Ansi 3 Color" = {
+				"Blue Component" = "0.5607843137";
+				"Green Component" = "0.9019607843";
+				"Red Component" = "0.9647058824";
+			};
+			"Ansi 4 Color" = {
+				"Blue Component" = "0.9803921569";
+				"Green Component" = "0.6666666667";
+				"Red Component" = "0.5098039216";
+			};
+			"Ansi 5 Color" = {
+				"Blue Component" = "0.9568627451";
+				"Green Component" = "0.5764705882";
+				"Red Component" = "0.8274509804";
+			};
+			"Ansi 6 Color" = {
+				"Blue Component" = "0.9529411765";
+				"Green Component" = "0.8980392157";
+				"Red Component" = "0.5294117647";
+			};
+			"Ansi 7 Color" = {
+				"Blue Component" = "0.9803921569";
+				"Green Component" = "0.9411764706";
+				"Red Component" = "0.9254901961";
+			};
+			"Ansi 8 Color" = {
+				"Blue Component" = "0.4784313725";
+				"Green Component" = "0.4000000000";
+				"Red Component" = "0.3882352941";
+			};
+			"Ansi 9 Color" = {
+				"Blue Component" = "0.6705882353";
+				"Green Component" = "0.4784313725";
+				"Red Component" = "0.9647058824";
+			};
+			"BM Growl" = 1;
+			"Background Color" = {
+				"Blue Component" = "0.1529411765";
+				"Green Component" = "0.1098039216";
+				"Red Component" = "0.1019607843";
+			};
+			"Background Image Location" = "";
+			"Badge Color" = {
+				"Alpha Component" = 0.5;
+				"Blue Component" = "0.6705882353";
+				"Green Component" = "0.4784313725";
+				"Red Component" = "0.9647058824";
+			};
+			"Blinking Cursor" = 0;
+			Blur = 0;
+			"Bold Color" = {
+				"Blue Component" = "0.9803921569";
+				"Green Component" = "0.9411764706";
+				"Red Component" = "0.9254901961";
+			};
+			"Character Encoding" = 4;
+			"Close Sessions On End" = 1;
+			Columns = 80;
+			Command = "";
+			"Cursor Color" = {
+				"Blue Component" = "0.9803921569";
+				"Green Component" = "0.9411764706";
+				"Red Component" = "0.9254901961";
+			};
+			"Cursor Guide Color" = {
+				"Alpha Component" = 0.25;
+				"Blue Component" = "0.2431372549";
+				"Green Component" = "0.1764705882";
+				"Red Component" = "0.1607843137";
+			};
+			"Cursor Text Color" = {
+				"Blue Component" = "0.1529411765";
+				"Green Component" = "0.1098039216";
+				"Red Component" = "0.1019607843";
+			};
+			"Cursor Type" = 2;
+			"Custom Command" = "No";
+			"Custom Directory" = "Recycle";
+			"Default Bookmark" = "No";
+			Description = "Default";
+			"Disable Window Resizing" = 1;
+			"Flashing Bell" = 0;
+			"Foreground Color" = {
+				"Blue Component" = "0.9803921569";
+				"Green Component" = "0.9411764706";
+				"Red Component" = "0.9254901961";
+			};
+			Guid = "FCFC261C-5343-4DB7-AE48-F2DFB558E41E";
+			"Horizontal Spacing" = 1;
+			"Idle Code" = 0;
+			"Jobs to Ignore" = (
+				"rlogin",
+				"ssh",
+				"slogin",
+				"telnet"
+			);
+			"Keyboard Map" = {
+				"0x2d-0x40000" = {
+					Action = 11;
+					Text = 0x1f;
+				};
+				"0x32-0x40000" = {
+					Action = 11;
+					Text = 0x00;
+				};
+				"0x33-0x40000" = {
+					Action = 11;
+					Text = 0x1b;
+				};
+				"0x34-0x40000" = {
+					Action = 11;
+					Text = 0x1c;
+				};
+				"0x35-0x40000" = {
+					Action = 11;
+					Text = 0x1d;
+				};
+				"0x36-0x40000" = {
+					Action = 11;
+					Text = 0x1e;
+				};
+				"0x37-0x40000" = {
+					Action = 11;
+					Text = 0x1f;
+				};
+				"0x38-0x40000" = {
+					Action = 11;
+					Text = 0x7f;
+				};
+				"0xf700-0x220000" = {
+					Action = 10;
+					Text = "[1;2A";
+				};
+				"0xf700-0x240000" = {
+					Action = 10;
+					Text = "[1;5A";
+				};
+				"0xf700-0x260000" = {
+					Action = 10;
+					Text = "[1;6A";
+				};
+				"0xf700-0x280000" = {
+					Action = 11;
+					Text = "0x1b 0x1b 0x5b 0x41";
+				};
+				"0xf701-0x220000" = {
+					Action = 10;
+					Text = "[1;2B";
+				};
+				"0xf701-0x240000" = {
+					Action = 10;
+					Text = "[1;5B";
+				};
+				"0xf701-0x260000" = {
+					Action = 10;
+					Text = "[1;6B";
+				};
+				"0xf701-0x280000" = {
+					Action = 11;
+					Text = "0x1b 0x1b 0x5b 0x42";
+				};
+				"0xf702-0x220000" = {
+					Action = 10;
+					Text = "[1;2D";
+				};
+				"0xf702-0x240000" = {
+					Action = 10;
+					Text = "[1;5D";
+				};
+				"0xf702-0x260000" = {
+					Action = 10;
+					Text = "[1;6D";
+				};
+				"0xf702-0x280000" = {
+					Action = 11;
+					Text = "0x1b 0x1b 0x5b 0x44";
+				};
+				"0xf703-0x220000" = {
+					Action = 10;
+					Text = "[1;2C";
+				};
+				"0xf703-0x240000" = {
+					Action = 10;
+					Text = "[1;5C";
+				};
+				"0xf703-0x260000" = {
+					Action = 10;
+					Text = "[1;6C";
+				};
+				"0xf703-0x280000" = {
+					Action = 11;
+					Text = "0x1b 0x1b 0x5b 0x43";
+				};
+				"0xf704-0x20000" = {
+					Action = 10;
+					Text = "[1;2P";
+				};
+				"0xf705-0x20000" = {
+					Action = 10;
+					Text = "[1;2Q";
+				};
+				"0xf706-0x20000" = {
+					Action = 10;
+					Text = "[1;2R";
+				};
+				"0xf707-0x20000" = {
+					Action = 10;
+					Text = "[1;2S";
+				};
+				"0xf708-0x20000" = {
+					Action = 10;
+					Text = "[15;2~";
+				};
+				"0xf709-0x20000" = {
+					Action = 10;
+					Text = "[17;2~";
+				};
+				"0xf70a-0x20000" = {
+					Action = 10;
+					Text = "[18;2~";
+				};
+				"0xf70b-0x20000" = {
+					Action = 10;
+					Text = "[19;2~";
+				};
+				"0xf70c-0x20000" = {
+					Action = 10;
+					Text = "[20;2~";
+				};
+				"0xf70d-0x20000" = {
+					Action = 10;
+					Text = "[21;2~";
+				};
+				"0xf70e-0x20000" = {
+					Action = 10;
+					Text = "[23;2~";
+				};
+				"0xf70f-0x20000" = {
+					Action = 10;
+					Text = "[24;2~";
+				};
+				"0xf729-0x20000" = {
+					Action = 10;
+					Text = "[1;2H";
+				};
+				"0xf729-0x40000" = {
+					Action = 10;
+					Text = "[1;5H";
+				};
+				"0xf72b-0x20000" = {
+					Action = 10;
+					Text = "[1;2F";
+				};
+				"0xf72b-0x40000" = {
+					Action = 10;
+					Text = "[1;5F";
+				};
+			};
+			"Link Color" = {
+				"Alpha Component" = 1;
+				"Blue Component" = "0.9803921569";
+				"Green Component" = "0.6666666667";
+				"Red Component" = "0.5098039216";
+			};
+			"Mouse Reporting" = 1;
+			Name = "Catppuccin Mocha";
+			"Non Ascii Font" = "JetBrainsMono-Regular 12";
+			"Non-ASCII Anti Aliased" = 1;
+			"Non-ASCII Ligatures" = 1;
+			"Normal Font" = "JetBrainsMono-Regular 12";
+			"Option Key Sends" = 0;
+			"Prompt Before Closing 2" = 0;
+			"Right Option Key Sends" = 0;
+			Rows = 25;
+			Screen = -1;
+			"Scrollback Lines" = 5000;
+			"Selected Text Color" = {
+				"Blue Component" = "0.9803921569";
+				"Green Component" = "0.9411764706";
+				"Red Component" = "0.9254901961";
+			};
+			"Selection Color" = {
+				"Blue Component" = "0.2431372549";
+				"Green Component" = "0.1764705882";
+				"Red Component" = "0.1607843137";
+			};
+			"Send Code When Idle" = 0;
+			Shortcut = "";
+			"Silence Bell" = 1;
+			"Sync Title" = 0;
+			"Terminal Type" = "xterm-256color";
+			"Transparency" = 0;
+			"Unlimited Scrollback" = 0;
+			"Use Bold Font" = 1;
+			"Use Bright Bold" = 1;
+			"Use Italic Font" = 1;
+			"Use Non-ASCII Font" = 1;
+			"Vertical Spacing" = 1;
+			"Visual Bell" = 1;
+			"Window Type" = 0;
+			"Working Directory" = "/Users/edward";
+		}
+	);
+</dict>
+</plist>

@@ -1,0 +1,17 @@
+[org/gnome/terminal/legacy/profiles:/:b1dcc9dd-5262-4d8d-a863-c897e6d979b9]
+visible-name='Catppuccin Mocha'
+background-color='rgb(26,28,39)'
+foreground-color='rgb(236,241,251)'
+use-transparent-background=false
+use-theme-colors=false
+use-theme-transparency=false
+bold-color-same-as-fg=true
+bold-color='rgb(236,241,251)'
+palette=['rgb(41,45,62)', 'rgb(246,122,171)', 'rgb(169,236,157)', 'rgb(246,229,143)', 'rgb(130,170,250)', 'rgb(211,147,244)', 'rgb(135,227,244)', 'rgb(236,241,251)', 'rgb(99,103,123)', 'rgb(246,122,171)', 'rgb(169,236,157)', 'rgb(246,229,143)', 'rgb(130,170,250)', 'rgb(211,147,244)', 'rgb(135,227,244)', 'rgb(236,241,251)']
+use-system-font=false
+font='JetBrains Mono 12'
+scrollback-lines=10000
+scrollbar-policy='never'
+audible-bell=false
+cursor-shape='block'
+cursor-blink-mode='on'

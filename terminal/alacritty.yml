@@ -1,0 +1,127 @@
+env:
+  TERM: xterm-256color
+
+window:
+  opacity: 1.0
+  padding:
+    x: 10
+    y: 10
+  dynamic_padding: true
+  decorations: full
+  startup_mode: Windowed
+
+scrolling:
+  history: 10000
+  multiplier: 3
+
+font:
+  normal:
+    family: JetBrains Mono
+    style: Regular
+  bold:
+    family: JetBrains Mono
+    style: Bold
+  italic:
+    family: JetBrains Mono
+    style: Italic
+  bold_italic:
+    family: JetBrains Mono
+    style: Bold Italic
+  size: 12.0
+  offset:
+    x: 0
+    y: 0
+  glyph_offset:
+    x: 0
+    y: 0
+
+# Catppuccin Mocha colors
+colors:
+  primary:
+    background: '#1E1E2E'
+    foreground: '#CDD6F4'
+  cursor:
+    text: '#1E1E2E'
+    cursor: '#F5E0DC'
+  vi_mode_cursor:
+    text: '#1E1E2E'
+    cursor: '#B4BEFE'
+  search:
+    matches:
+      foreground: '#1E1E2E'
+      background: '#A6ADC8'
+    focused_match:
+      foreground: '#1E1E2E'
+      background: '#A6E3A1'
+  footer_bar:
+    background: '#1E1E2E'
+    foreground: '#CDD6F4'
+  hints:
+    start:
+      foreground: '#1E1E2E'
+      background: '#F9E2AF'
+    end:
+      foreground: '#1E1E2E'
+      background: '#A6ADC8'
+  selection:
+    text: '#1E1E2E'
+    background: '#F5E0DC'
+  normal:
+    black: '#45475A'
+    red: '#F38BA8'
+    green: '#A6E3A1'
+    yellow: '#F9E2AF'
+    blue: '#89B4FA'
+    magenta: '#CBA6F7'
+    cyan: '#94E2D5'
+    white: '#BAC2DE'
+  bright:
+    black: '#585B70'
+    red: '#F38BA8'
+    green: '#A6E3A1'
+    yellow: '#F9E2AF'
+    blue: '#89B4FA'
+    magenta: '#CBA6F7'
+    cyan: '#94E2D5'
+    white: '#A6ADC8'
+  indexed_colors:
+    - { index: 16, color: '#FAB387' }
+    - { index: 17, color: '#F5E0DC' }
+
+bell:
+  animation: EaseOutExpo
+  duration: 0
+  color: '#F5E0DC'
+
+cursor:
+  style:
+    shape: Block
+    blinking: On
+  vi_mode_style: Block
+  blink_interval: 750
+  unfocused_hollow: true
+  thickness: 0.15
+
+live_config_reload: true
+
+mouse:
+  double_click: { threshold: 300 }
+  triple_click: { threshold: 300 }
+  hide_when_typing: true
+
+selection:
+  semantic_escape_chars: ",│`|:\"' ()[]{}<>\t"
+  save_to_clipboard: true
+
+mouse_bindings:
+  - { mouse: Middle, action: PasteSelection }
+
+key_bindings:
+  - { key: Paste,                                           action: Paste          }
+  - { key: Copy,                                            action: Copy           }
+  - { key: L,              mods: Control,                   action: ClearLogNotice }
+  - { key: L,              mods: Control, mode: ~Vi,        chars: "\x0c"          }
+  - { key: PageUp,         mods: Shift,   mode: ~Alt,       action: ScrollPageUp   }
+  - { key: PageDown,       mods: Shift,   mode: ~Alt,       action: ScrollPageDown }
+  - { key: Home,           mods: Shift,   mode: ~Alt,       action: ScrollToTop    }
+  - { key: End,            mods: Shift,   mode: ~Alt,       action: ScrollToBottom }
