@@ -27,7 +27,7 @@ Personal configuration files for VSCode, Neovim, and Zsh. These dotfiles are des
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/EdwardAngert/dotfiles.git
+   git clone https://github.com/yourusername/dotfiles.git
    cd dotfiles
    ```
 

@@ -13,5 +13,5 @@
   "files.trimTrailingWhitespace": true,
   "files.insertFinalNewline": true,
   "files.autoSave": "onFocusChange",
-  "telemetry.telemetryLevel": "off","remote.SSH.remotePlatform": {"coder-vscode.dev.coder.com--edward--coder-claude":"linux"},"remote.SSH.connectTimeout": 1800
+  "telemetry.telemetryLevel": "off","remote.SSH.connectTimeout": 1800,"remote.SSH.remotePlatform": {"coder-vscode.dev.coder.com--edward--coder-claude":"linux"}
 }
