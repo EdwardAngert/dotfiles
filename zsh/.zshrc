@@ -74,6 +74,8 @@ if command -v git &>/dev/null; then
   alias gst="git stash"
   alias gsp="git stash pop"
   alias gd="git diff"
+  # Personal git identity alias
+  alias git\'sme="git config --local user.name \"EdwardAngert\" && git config --local user.email \"17991901+EdwardAngert@users.noreply.github.com\" && echo \"Git identity set to EdwardAngert\""
 fi
 
 # General aliases

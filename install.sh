@@ -653,21 +653,6 @@ EXECUTION_TIME=$((END_TIME - START_TIME))
 MINUTES=$((EXECUTION_TIME / 60))
 SECONDS=$((EXECUTION_TIME % 60))
 
-# Configure git settings if in the dotfiles repo
-print_info "Configuring git settings..."
-if command -v git &>/dev/null; then
-  # Using the original repo directory - not a symlink path
-  if [ -d "$DOTFILES_DIR/.git" ]; then
-    cd "$DOTFILES_DIR"
-    git config --local user.name "EdwardAngert"
-    git config --local user.email "17991901+EdwardAngert@users.noreply.github.com"
-    print_success "Git config set successfully for the dotfiles repository"
-  else
-    print_warning "Not running in a git repository. Skipping git configuration."
-  fi
-else
-  print_warning "Git not found. Skipping git configuration."
-fi
 
 echo -e "\n${GREEN}All dotfiles have been linked!${NC}"
 print_info "Note: You may need to restart your terminal to see all changes."
