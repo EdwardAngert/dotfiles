@@ -49,7 +49,7 @@ cleanup() {
 # Trap signals for cleanup
 trap 'cleanup; echo -e "\n${RED}Script interrupted. Exiting...${NC}"; exit 1' INT TERM
 trap 'cleanup' EXIT
-trap 'echo -e "${RED}ERROR:${NC} Command failed at line $LINENO: $BASH_COMMAND"' ERR$'\n\t'
+trap 'echo -e "${RED}ERROR:${NC} Command failed at line $LINENO: $BASH_COMMAND"' ERR
 
 # Colors
 RED='\033[0;31m'
@@ -464,58 +464,58 @@ if [ "$SKIP_NEOVIM" = false ]; then
   nvim_config_dir="$HOME/.config/nvim"
   nvim_init_path="$nvim_config_dir/init.vim"
 
-# Backup existing config if option selected
-if [ "$SHOULD_BACKUP" = true ] && [ -d "$nvim_config_dir" ]; then
-  backup_if_exists "$nvim_config_dir"
-elif [ "$SHOULD_BACKUP" = true ] && [ -f "$nvim_init_path" ]; then
-  backup_if_exists "$nvim_init_path"
-fi
+  # Backup existing config if option selected
+  if [ "$SHOULD_BACKUP" = true ] && [ -d "$nvim_config_dir" ]; then
+    backup_if_exists "$nvim_config_dir"
+  elif [ "$SHOULD_BACKUP" = true ] && [ -f "$nvim_init_path" ]; then
+    backup_if_exists "$nvim_init_path"
+  fi
 
-# Create directory if it doesn't exist
-if [ ! -d "$nvim_config_dir" ]; then
-  print_info "Creating Neovim config directory..."
-  mkdir -p "$nvim_config_dir"
-fi
+  # Create directory if it doesn't exist
+  if [ ! -d "$nvim_config_dir" ]; then
+    print_info "Creating Neovim config directory..."
+    mkdir -p "$nvim_config_dir"
+  fi
 
-print_info "Creating Neovim symlinks..."
-if [ -f "$DOTFILES_DIR/nvim/init.vim" ]; then
-  ln -sf "$DOTFILES_DIR/nvim/init.vim" "$nvim_init_path"
-  print_success "Neovim config linked!"
-else
-  print_error "Neovim config file not found: $DOTFILES_DIR/nvim/init.vim"
-fi
+  print_info "Creating Neovim symlinks..."
+  if [ -f "$DOTFILES_DIR/nvim/init.vim" ]; then
+    ln -sf "$DOTFILES_DIR/nvim/init.vim" "$nvim_init_path"
+    print_success "Neovim config linked!"
+  else
+    print_error "Neovim config file not found: $DOTFILES_DIR/nvim/init.vim"
+  fi
 
 # ZSH (if not skipped)
 if [ "$SKIP_ZSH" = false ]; then
   print_info "Setting up Zsh configuration..."
   zsh_config_path="$HOME/.zshrc"
 
-# Backup existing config if option selected
-if [ "$SHOULD_BACKUP" = true ] && [ -f "$zsh_config_path" ]; then
-  backup_if_exists "$zsh_config_path"
-fi
-
-print_info "Creating Zsh symlinks..."
-if [ -f "$DOTFILES_DIR/zsh/.zshrc" ]; then
-  ln -sf "$DOTFILES_DIR/zsh/.zshrc" "$zsh_config_path"
-  print_success "Zsh config linked!"
-else
-  print_error "Zsh config file not found: $DOTFILES_DIR/zsh/.zshrc"
-fi
-
-  # Install Neovim plugins
-  if check_command nvim; then
-    if [ -f "${XDG_DATA_HOME:-$HOME/.local/share}/nvim/site/autoload/plug.vim" ] || [ -f "$HOME/.vim/autoload/plug.vim" ]; then
-      print_info "Installing Neovim plugins..."
-      # Use a safer approach to install plugins
-      nvim --headless +PlugInstall +qall 2>/dev/null || true
-      print_success "Neovim plugins installed!"
-    else
-      print_warning "vim-plug not found. Skipping Neovim plugin installation."
-    fi
-  else
-    print_warning "Neovim not found. Skipping plugin installation."
+  # Backup existing config if option selected
+  if [ "$SHOULD_BACKUP" = true ] && [ -f "$zsh_config_path" ]; then
+    backup_if_exists "$zsh_config_path"
   fi
+
+  print_info "Creating Zsh symlinks..."
+  if [ -f "$DOTFILES_DIR/zsh/.zshrc" ]; then
+    ln -sf "$DOTFILES_DIR/zsh/.zshrc" "$zsh_config_path"
+    print_success "Zsh config linked!"
+  else
+    print_error "Zsh config file not found: $DOTFILES_DIR/zsh/.zshrc"
+  fi
+fi
+
+# Install Neovim plugins (if not skipped)
+if [ "$SKIP_NEOVIM" = false ] && check_command nvim; then
+  if [ -f "${XDG_DATA_HOME:-$HOME/.local/share}/nvim/site/autoload/plug.vim" ] || [ -f "$HOME/.vim/autoload/plug.vim" ]; then
+    print_info "Installing Neovim plugins..."
+    # Use a safer approach to install plugins
+    nvim --headless +PlugInstall +qall 2>/dev/null || true
+    print_success "Neovim plugins installed!"
+  else
+    print_warning "vim-plug not found. Skipping Neovim plugin installation."
+  fi
+else
+  print_warning "Neovim not found or skipped. Skipping plugin installation."
 fi
 
 # Install fonts (if not skipped)
@@ -598,3 +598,4 @@ echo -e "\n${GREEN}All dotfiles have been linked!${NC}"
 print_info "Note: You may need to restart your terminal to see all changes."
 print_info "To apply zsh changes without restarting: source ~/.zshrc"
 echo -e "\n${GREEN}Installation completed in ${MINUTES}m ${SECONDS}s${NC}"
+fi
