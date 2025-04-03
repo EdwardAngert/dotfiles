@@ -141,6 +141,20 @@ fi
 
 print_info "Detected OS: $OS"
 
+# Configure git local settings
+print_info "Configuring git local settings..."
+if command -v git &>/dev/null; then
+  if [ -d ".git" ]; then
+    git config --local user.name "EdwardAngert"
+    git config --local user.email "17991901+EdwardAngert@users.noreply.github.com"
+    print_success "Git local config set successfully"
+  else
+    print_warning "Not a git repository. Skipping git configuration."
+  fi
+else
+  print_warning "Git not found. Skipping git configuration."
+fi
+
 # Create a flag file to detect if we're resuming after oh-my-zsh installation
 FLAG_FILE="/tmp/dotfiles_install_in_progress"
 
