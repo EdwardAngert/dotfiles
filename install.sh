@@ -779,12 +779,24 @@ if [ "$SKIP_NEOVIM" = false ]; then
       # Check if Neovim has Lua support
       HAS_LUA=false
       if check_command nvim; then
-        if nvim --headless -c "if has('nvim-0.5') && has('lua') | echo 'has_lua' | else | echo 'no_lua' | endif" -c q 2>&1 | grep -q "has_lua"; then
+        # Create a temporary Lua test file
+        NVIM_LUA_TEST="/tmp/nvim_lua_test.lua"
+        echo "print('has_lua')" > "$NVIM_LUA_TEST"
+        
+        # Try executing a Lua file directly
+        if nvim --headless -c "lua dofile('$NVIM_LUA_TEST')" -c q 2>&1 | grep -q "has_lua"; then
           HAS_LUA=true
           print_info "Detected Neovim with Lua support"
+        # Fallback to checking version number
+        elif nvim --version | grep -q "LuaJIT"; then
+          HAS_LUA=true
+          print_info "Detected Neovim with LuaJIT support"
         else
           print_warning "Neovim without Lua support detected, will use compatible configuration"
         fi
+        
+        # Clean up test file
+        rm -f "$NVIM_LUA_TEST"
       fi
       
       # Determine which template to use

@@ -36,6 +36,7 @@ let g:additional_plugins = [
 ]
 
 " Configure Catppuccin theme 
+let g:preferred_colorscheme = 'catppuccin'
 let g:catppuccin_flavour = 'mocha' " Options: latte, frappe, macchiato, mocha
 let g:catppuccin_transparent = 0   " Set to 1 for transparent background
 
