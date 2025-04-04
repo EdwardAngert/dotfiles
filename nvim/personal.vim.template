@@ -1,7 +1,10 @@
 " This is a template for personal Neovim settings
 " Copy this to ~/.config/nvim/personal.vim and customize
-
-" Uncomment and modify options below to override the default settings
+"
+" Note: These settings are loaded AFTER the main dotfiles settings but BEFORE
+" themes are applied. This allows you to:
+" 1. Override basic settings from dotfiles
+" 2. Configure plugins and themes before they're applied
 
 " ========== Plugin Management ==========
 " Set this to 1 to completely override the default plugin list

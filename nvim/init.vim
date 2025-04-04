@@ -1,9 +1,5 @@
-" Load personal settings first if they exist
-if filereadable(expand('~/.config/nvim/personal.vim'))
-  source ~/.config/nvim/personal.vim
-endif
-
-" Basic Settings (can be overridden by personal.vim)
+" Basic Settings
+" These will be the base settings that apply to all installations
 if !exists('g:basic_settings_loaded')
   set number          " Simple line numbers (no relative)
   set expandtab       " Tabs are spaces
@@ -210,6 +206,11 @@ if filereadable(expand('~/.vim/autoload/plug.vim')) || filereadable(expand('~/.l
   endif
 
   call plug#end()
+
+  " Load personal settings if they exist (after plugins but before applying theme)
+  if filereadable(expand('~/.config/nvim/personal.vim'))
+    source ~/.config/nvim/personal.vim
+  endif
 
   " Theme configuration
   " Configure Catppuccin flavor
