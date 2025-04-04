@@ -6,10 +6,15 @@ A modern, feature-rich Neovim configuration with sensible defaults and customiza
 
 - Modern look with Catppuccin theme
 - Git integration with fugitive and gitgutter
-- Fuzzy finding with Telescope
-- Auto-completion with CoC
+- Fuzzy finding with Telescope and FZF integration
+- Auto-completion with CoC (including support for JSON, YAML, TOML)
 - Enhanced syntax highlighting with Treesitter
-- Markdown support
+- Markdown support with table formatting and improved writing experience
+- Session management for seamless workflow across git repositories
+- Auto-formatting for config files
+- Auto-save when focus is lost
+- Spell checking for markdown files
+- Easy text alignment tools
 - Lightweight and fast with smart defaults
 
 ## Installation
@@ -76,6 +81,8 @@ nnoremap <leader>x :YourCommand<CR>
 - `<leader>fg` - Live grep (search in all files)
 - `<leader>fb` - Browse open buffers
 - `<leader>fh` - Search help tags
+- `<leader>fr` - Recently opened files (MRU)
+- `<leader>fc` - Find text in current file
 
 ### Text Editing
 
@@ -84,17 +91,33 @@ nnoremap <leader>x :YourCommand<CR>
 - `cs"'` - Change surrounding quotes from " to ' (vim-surround)
 - `ds"` - Delete surrounding quotes (vim-surround)
 - `ysiw]` - Surround word with [] (vim-surround)
+- `ga` - Start Easy Align (visual mode or with motion)
 
 ### Git (Fugitive)
 
-- `:Git` - Main command interface
-- `:Git blame` - Show git blame
-- `:Git commit` - Commit changes
-- `:Git push` - Push to remote
+- `<leader>gs` - Git status
+- `<leader>gc` - Git commit
+- `<leader>gp` - Git push
+- `<leader>gl` - Git pull
+- `<leader>gd` - Git diff
+- `<leader>gb` - Git blame
 
-### Tabular
+### Markdown
+
+- `<leader>tt` - Toggle table mode
+- `<leader>tm` - Convert selected text to table (visual mode)
+- `<leader>tr` - Realign table
+- Spell checking enabled by default
+
+### Session Management
+
+- `<leader>ss` - Start/pause session recording
+- `<leader>sl` - Load session
+
+### Tabular & Alignment
 
 - `:Tabularize /=` - Align text around = signs
+- `vipga=` - In visual mode, select paragraph and align around =
 
 ### CoC
 
@@ -112,6 +135,7 @@ nnoremap <leader>x :YourCommand<CR>
 | neoclide/coc.nvim | Code completion and language server protocol support |
 | nvim-treesitter/nvim-treesitter | Advanced syntax highlighting |
 | nvim-telescope/telescope.nvim | Fuzzy finder with previews |
+| nvim-telescope/telescope-fzf-native.nvim | FZF integration for faster searching |
 | catppuccin/nvim | Modern, soft color scheme |
 | tpope/vim-fugitive | Git integration from within vim |
 | airblade/vim-gitgutter | Shows git diff markers in the gutter |
@@ -120,4 +144,9 @@ nnoremap <leader>x :YourCommand<CR>
 | tpope/vim-commentary | Easy commenting of code |
 | tpope/vim-surround | Easily change surrounding characters |
 | godlygeek/tabular | Text alignment tool |
+| junegunn/vim-easy-align | Align text around characters with interactive interface |
 | plasticboy/vim-markdown | Enhanced markdown support |
+| dhruvasagar/vim-table-mode | Easy table creation and formatting in markdown |
+| reedes/vim-pencil | Better writing experience with soft wrapping |
+| tpope/vim-obsession | Session management for persistent workflow |
+| sbdchd/neoformat | Auto-formatting for many languages and file types |

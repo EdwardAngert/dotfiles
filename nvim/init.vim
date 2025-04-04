@@ -59,37 +59,111 @@ if filereadable(expand('~/.vim/autoload/plug.vim')) || filereadable(expand('~/.l
   if exists('g:custom_plugins_loaded') && g:custom_plugins_loaded == 1
     " Skip default plugins as they were defined in personal.vim
   else
-    " Core plugins
-    " Code completion and assistance
+    " -------------------------------------------------------
+    " LANGUAGE INTELLIGENCE & COMPLETION
+    " -------------------------------------------------------
+    
+    " Full-featured language server protocol (LSP) client
+    " Provides intelligent code completion, error checking, and more
     Plug 'neoclide/coc.nvim', {'branch': 'release'}
     let g:coc_disable_startup_warning = 1
     
-    " Syntax and highlighting
+    " Advanced syntax highlighting using incremental parsing library
+    " Far better than regex-based highlighting, understands code structure
     Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
     
-    " Fuzzy finder
+    " -------------------------------------------------------
+    " FILE NAVIGATION & SEARCH
+    " -------------------------------------------------------
+    
+    " Dependency for telescope and other plugins
+    " Provides lua utility functions for other plugins
     Plug 'nvim-lua/plenary.nvim'
+    
+    " Highly extendable fuzzy finder over lists
+    " Used for searching files, buffers, grep, git operations, and more
     Plug 'nvim-telescope/telescope.nvim'
     
-    " Theme
+    " C port of FZF for faster searching with telescope
+    " Makes searching noticeably faster, especially in large projects
+    Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }
+    
+    " -------------------------------------------------------
+    " APPEARANCE & UI
+    " -------------------------------------------------------
+    
+    " Modern, customizable theme with several variants
+    " Offers soft, pleasing colors with good contrast
     Plug 'catppuccin/nvim', { 'as': 'catppuccin' }
     
-    " Git integration
-    Plug 'tpope/vim-fugitive'
-    Plug 'airblade/vim-gitgutter'
-    
-    " UI enhancements
+    " Lightweight, configurable status line 
+    " Shows file info, mode, git branch, etc. in the status bar
     Plug 'itchyny/lightline.vim'
+    
+    " Shows vertical indent guides
+    " Makes nested code blocks easier to distinguish visually
     Plug 'Yggdroot/indentLine'
     
-    " Text editing helpers
+    " -------------------------------------------------------
+    " GIT INTEGRATION
+    " -------------------------------------------------------
+    
+    " Complete git integration within vim
+    " Run any git command within vim, view diffs, resolve conflicts
+    Plug 'tpope/vim-fugitive'
+    
+    " Shows git diff markers in the sign column
+    " Indicates added, modified, and removed lines
+    Plug 'airblade/vim-gitgutter'
+    
+    " -------------------------------------------------------
+    " EDITING ENHANCEMENTS
+    " -------------------------------------------------------
+    
+    " Easy commenting of code
+    " Toggle comments with gcc (line) or gc (selection)
     Plug 'tpope/vim-commentary'
+    
+    " Easily change surrounding quotes, brackets, tags
+    " Change, add, or delete surroundings with simple commands
     Plug 'tpope/vim-surround'
+    
+    " Text alignment around delimiters
+    " Align code on =, :, |, etc.
     Plug 'godlygeek/tabular'
     
-    " Markdown support
+    " Interactive text alignment
+    " More interactive, easier to use version of tabular
+    Plug 'junegunn/vim-easy-align'
+    
+    " -------------------------------------------------------
+    " MARKDOWN & WRITING
+    " -------------------------------------------------------
+    
+    " Better writing experience with soft wrapping
+    " Improves text editing for prose, not just code
+    Plug 'reedes/vim-pencil'
+    
+    " Enhanced markdown support
+    " Better syntax highlighting, concealing, folding for markdown
     Plug 'plasticboy/vim-markdown'
     let g:vim_markdown_frontmatter = 1 " YAML syntax highlighting
+    
+    " Easy markdown table creation and formatting
+    " Create, format, and manipulate tables with simple commands
+    Plug 'dhruvasagar/vim-table-mode'
+    
+    " -------------------------------------------------------
+    " WORKFLOW & PRODUCTIVITY
+    " -------------------------------------------------------
+    
+    " Session management for persistent workflow
+    " Save and restore open files, window layout, and more
+    Plug 'tpope/vim-obsession'
+    
+    " Auto-formatting for many languages and file types
+    " Format code on save or on demand with Neoformat command
+    Plug 'sbdchd/neoformat'
     
     " Load additional plugins if specified
     if exists('g:additional_plugins') && type(g:additional_plugins) == 3  " Check if it's a list
@@ -171,6 +245,121 @@ else
   nnoremap <leader>fg :grep<space>
   nnoremap <leader>fb :ls<cr>:b<space>
 endif
+
+" Auto Commands
+augroup custom_settings
+  autocmd!
+  " Markdown-specific settings
+  autocmd FileType markdown,md setlocal spell spelllang=en_us
+  autocmd FileType markdown,md call pencil#init({'wrap': 'soft'})
+  autocmd FileType markdown,md setlocal conceallevel=2
+
+  " Config file settings
+  autocmd FileType yaml,json,toml setlocal tabstop=2 shiftwidth=2
+
+  " Auto-format on save for certain file types
+  autocmd BufWritePre *.js,*.jsx,*.ts,*.tsx,*.json,*.yaml,*.yml Neoformat
+  
+  " Auto-save when focus is lost
+  autocmd FocusLost * silent! wall
+augroup END
+
+" -------------------------------------------------------
+" PLUGIN CONFIGURATIONS
+" -------------------------------------------------------
+
+" -------------------------------------------------------
+" MARKDOWN & WRITING
+" -------------------------------------------------------
+
+" Table Mode - for creating and manipulating markdown tables
+let g:table_mode_corner='|'                          " Use markdown-style table corners
+let g:table_mode_tableize_map = '<leader>tm'         " Convert text to table
+let g:table_mode_realign_map = '<leader>tr'          " Realign existing table
+nmap <leader>tt :TableModeToggle<CR>                 " Toggle table mode
+
+" Vim-pencil - for better prose writing
+let g:pencil#wrapModeDefault = 'soft'                " Use soft line wraps (virtual, not actual breaks)
+let g:pencil#textwidth = 80                          " Target width for text
+let g:pencil#conceallevel = 2                        " Hide markup for better readability
+
+" Vim Markdown - enhanced markdown functionality
+let g:vim_markdown_folding_disabled = 1              " Disable folding (can be overwhelming)
+let g:vim_markdown_conceal = 2                       " Hide markup for better readability
+let g:vim_markdown_conceal_code_blocks = 0           " Don't conceal code blocks
+let g:vim_markdown_math = 1                          " Enable math rendering
+let g:vim_markdown_toml_frontmatter = 1              " Support TOML frontmatter
+let g:vim_markdown_strikethrough = 1                 " Enable strikethrough with ~~text~~
+let g:vim_markdown_autowrite = 1                     " Auto-save when following links
+let g:vim_markdown_edit_url_in = 'tab'               " Open URLs in a new tab
+let g:vim_markdown_follow_anchor = 1                 " Follow named anchors
+
+" -------------------------------------------------------
+" PRODUCTIVITY TOOLS
+" -------------------------------------------------------
+
+" Neoformat - code formatting
+let g:neoformat_try_node_exe = 1                     " Use local node modules for formatters when available
+
+" Session management with Obsession
+nnoremap <leader>ss :Obsession<CR>                   " Start/pause recording session
+nnoremap <leader>sl :source Session.vim<CR>          " Load session
+
+" -------------------------------------------------------
+" GIT INTEGRATION
+" -------------------------------------------------------
+
+" Fugitive - git commands within Vim
+nnoremap <leader>gs :Git<CR>                         " Git status
+nnoremap <leader>gc :Git commit<CR>                  " Git commit
+nnoremap <leader>gp :Git push<CR>                    " Git push
+nnoremap <leader>gl :Git pull<CR>                    " Git pull
+nnoremap <leader>gd :Git diff<CR>                    " Git diff
+nnoremap <leader>gb :Git blame<CR>                   " Git blame
+
+" -------------------------------------------------------
+" TELESCOPE & SEARCH
+" -------------------------------------------------------
+
+" Telescope configuration with FZF integration
+augroup TelescopeSetup
+  autocmd!
+  autocmd VimEnter * lua << EOF
+    require('telescope').setup {
+      extensions = {
+        fzf = {
+          fuzzy = true,                              -- Enable fuzzy matching
+          override_generic_sorter = true,            -- Override the default sorter
+          override_file_sorter = true,               -- Override the file sorter
+          case_mode = "smart_case"                   -- Smart case sensitivity
+        }
+      }
+    }
+    require('telescope').load_extension('fzf')       -- Load the FZF extension
+EOF
+augroup END
+
+" Telescope key mappings
+nnoremap <leader>fr :Telescope oldfiles<CR>          " Recently opened files (MRU)
+nnoremap <leader>fc :Telescope current_buffer_fuzzy_find<CR>  " Search in current file
+nnoremap <leader>fg :Telescope live_grep<CR>         " Search text in all files (grep)
+nnoremap <leader>fb :Telescope buffers<CR>           " Browse open buffers
+
+" -------------------------------------------------------
+" TEXT EDITING HELPERS
+" -------------------------------------------------------
+
+" Easy Align - interactive alignment
+xmap ga <Plug>(EasyAlign)                            " Start EasyAlign in visual mode (e.g., vipga=)
+nmap ga <Plug>(EasyAlign)                            " Start EasyAlign for motion/text object (e.g., gaip=)
+
+" -------------------------------------------------------
+" CODE INTELLIGENCE
+" -------------------------------------------------------
+
+" CoC extensions for code intelligence
+" Run this once: :CocInstall coc-json coc-yaml coc-toml coc-tsserver coc-markdownlint
+let g:coc_global_extensions = ['coc-json', 'coc-yaml', 'coc-toml', 'coc-tsserver', 'coc-markdownlint']
 
 " Install vim-plug message
 if !filereadable(expand('~/.vim/autoload/plug.vim')) && !filereadable(expand('~/.local/share/nvim/site/autoload/plug.vim'))
