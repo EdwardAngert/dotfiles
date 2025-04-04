@@ -22,6 +22,9 @@ Personal configuration files for VSCode, Neovim, and Zsh. These dotfiles are des
 - 🖥️ **Terminal configurations** for iTerm2 (macOS) and Linux terminals
 - 🔤 **JetBrains Mono font** installation for better readability
 - 🌈 **Consistent theming** across all tools with Catppuccin
+- 🔁 **Update system** for keeping dotfiles current with `--update` and `--pull` options
+- ⏱️ **Automated updates** via cron job to keep everything up-to-date
+- 🛠️ **Fallback configurations** for environments with restricted dependencies
 
 ## Installation
 
@@ -55,10 +58,28 @@ Available options:
 - `--skip-zsh`: Skip Zsh configuration
 - `--skip-vscode`: Skip VSCode configuration
 - `--skip-terminal`: Skip terminal configuration
+- `--update`: Update mode - skip dependency installation, only update configs
+- `--pull`: Pull latest changes from git repository before installing
+- `--setup-auto-update`: Configure automatic weekly updates via cron
 
 For example, to install everything except fonts:
 ```bash
 ./install.sh --skip-fonts
+```
+
+To update an existing installation:
+```bash
+./install.sh --update
+```
+
+To pull the latest changes and update:
+```bash
+./install.sh --pull --update
+```
+
+To set up automated weekly updates:
+```bash
+./install.sh --setup-auto-update
 ```
 
 The script will:
@@ -98,6 +119,40 @@ Edit `nvim/init.vim` to customize your Neovim configuration.
 ### Zsh
 
 Edit `zsh/.zshrc` to customize your Zsh configuration.
+
+## Updating
+
+There are several ways to update your dotfiles installation:
+
+### Updating on an Existing Machine
+
+If you already have the dependencies installed and just want to update your configurations:
+
+```bash
+./install.sh --update
+```
+
+This will skip dependency installation and only update your configurations.
+
+### Pulling Latest Changes
+
+To get the latest changes from the repository and apply them:
+
+```bash
+./install.sh --pull --update
+```
+
+This will pull the latest changes from the git repository and then update your configurations.
+
+### Automated Updates
+
+You can set up a weekly cron job to automatically update your dotfiles:
+
+```bash
+./install.sh --setup-auto-update
+```
+
+This will create a weekly cron job that runs every Sunday at noon to pull the latest changes and update your configurations. A script will be created at `~/.local/bin/update-dotfiles.sh` that you can also run manually anytime.
 
 ## Manual Installation
 

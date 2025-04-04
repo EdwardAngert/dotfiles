@@ -24,6 +24,13 @@ print_error() {
   echo -e "${RED}ERROR:${NC} $1"
 }
 
+# Process command line arguments
+UPDATE_MODE=false
+if [[ "$1" == "--update" ]]; then
+  UPDATE_MODE=true
+  print_info "Running in update mode - will overwrite existing configurations"
+fi
+
 # Function to backup existing configuration
 backup_if_exists() {
   if [ -f "$1" ] || [ -d "$1" ]; then
@@ -40,8 +47,14 @@ backup_if_exists() {
   return 1
 }
 
-# Always backup
-SHOULD_BACKUP=true
+# Determine backup behavior based on update mode
+if [ "$UPDATE_MODE" = true ]; then
+  SHOULD_BACKUP=false
+  print_info "Update mode: Not backing up existing configurations"
+else
+  SHOULD_BACKUP=true
+  print_info "Regular mode: Will backup existing configurations"
+fi
 
 # Directory where this script is located
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

@@ -24,6 +24,13 @@ print_error() {
   echo -e "${RED}ERROR:${NC} $1"
 }
 
+# Process command line arguments
+UPDATE_MODE=false
+if [[ "$1" == "--update" ]]; then
+  UPDATE_MODE=true
+  print_info "Running in update mode - will only install missing fonts"
+fi
+
 # Create temporary directory for downloads
 TEMP_DIR=$(mktemp -d)
 FONT_DIR="$TEMP_DIR/fonts"
@@ -69,12 +76,28 @@ if [ $? -ne 0 ]; then
 fi
 
 print_info "Installing JetBrains Mono fonts..."
-cp "$FONT_DIR/fonts/ttf/"*.ttf "$FONT_INSTALL_DIR/"
 
-if [ $? -ne 0 ]; then
-  print_error "Failed to install JetBrains Mono fonts."
-  rm -rf "$TEMP_DIR"
-  exit 1
+# In update mode, check if fonts already exist
+if [ "$UPDATE_MODE" = true ]; then
+  # Check for at least one JetBrains Mono font file
+  if ls "$FONT_INSTALL_DIR/JetBrainsMono"*.ttf &>/dev/null; then
+    print_info "JetBrains Mono fonts already installed, skipping in update mode"
+  else
+    cp "$FONT_DIR/fonts/ttf/"*.ttf "$FONT_INSTALL_DIR/"
+    if [ $? -ne 0 ]; then
+      print_error "Failed to install JetBrains Mono fonts."
+      rm -rf "$TEMP_DIR"
+      exit 1
+    fi
+  fi
+else
+  # Install normally in non-update mode
+  cp "$FONT_DIR/fonts/ttf/"*.ttf "$FONT_INSTALL_DIR/"
+  if [ $? -ne 0 ]; then
+    print_error "Failed to install JetBrains Mono fonts."
+    rm -rf "$TEMP_DIR"
+    exit 1
+  fi
 fi
 
 # Refresh font cache on Linux

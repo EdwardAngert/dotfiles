@@ -13,6 +13,7 @@ SKIP_NEOVIM=false
 SKIP_ZSH=false
 SKIP_VSCODE=false
 SKIP_TERMINAL=false
+UPDATE_MODE=false
 
 # Process command line arguments
 while [[ "$#" -gt 0 ]]; do
@@ -22,6 +23,29 @@ while [[ "$#" -gt 0 ]]; do
     --skip-zsh) SKIP_ZSH=true ;;
     --skip-vscode) SKIP_VSCODE=true ;;
     --skip-terminal) SKIP_TERMINAL=true ;;
+    --update) UPDATE_MODE=true ;;
+    --pull) 
+      print_info "Pulling latest changes from git repository..."
+      git pull
+      print_success "Repository updated to latest version"
+      ;;
+    --setup-auto-update)
+      print_info "Setting up automatic updates..."
+      # Create update script in user's local bin
+      AUTO_UPDATE_SCRIPT="$HOME/.local/bin/update-dotfiles.sh"
+      mkdir -p "$(dirname "$AUTO_UPDATE_SCRIPT")"
+      
+      echo '#!/bin/bash' > "$AUTO_UPDATE_SCRIPT"
+      echo "cd $(pwd) && ./install.sh --pull --update" >> "$AUTO_UPDATE_SCRIPT"
+      chmod +x "$AUTO_UPDATE_SCRIPT"
+      
+      # Set up weekly cron job
+      (crontab -l 2>/dev/null || echo "") | grep -v "update-dotfiles.sh" | { cat; echo "0 12 * * 0 $AUTO_UPDATE_SCRIPT"; } | crontab -
+      
+      print_success "Automatic weekly updates configured! Updates will run every Sunday at noon."
+      print_info "To manually trigger an update, run: $AUTO_UPDATE_SCRIPT"
+      exit 0
+      ;;
     --help) 
       echo "Usage: $0 [options]"
       echo "Options:"
@@ -30,7 +54,15 @@ while [[ "$#" -gt 0 ]]; do
       echo "  --skip-zsh       Skip Zsh configuration"
       echo "  --skip-vscode    Skip VSCode configuration"
       echo "  --skip-terminal  Skip terminal configuration"
+      echo "  --update         Update mode - skip dependency installation, only update configs"
+      echo "  --pull           Pull latest changes from git repository before installing"
+      echo "  --setup-auto-update  Configure automatic weekly updates via cron"
       echo "  --help           Show this help message"
+      echo ""
+      echo "Update scenarios:"
+      echo "  1. Existing machine with nvim/zsh: Use --update to skip package installation"
+      echo "  2. Update existing dotfiles: Use --pull --update to get latest changes"
+      echo "  3. Automate updates: Use --setup-auto-update to configure weekly auto-updates"
       exit 0
       ;;
     *) echo "Unknown parameter: $1"; exit 1 ;;
@@ -159,28 +191,33 @@ if [ -f "$FLAG_FILE" ]; then
   cd "$DOTFILES_DIR"
 else
   # First run of the script
-  # Install package managers if needed
-  if [ "$OS" = "macOS" ] && ! check_command brew; then
-    print_info "Homebrew not found. Installing..."
-    install_homebrew
-  elif [ "$OS" = "Linux" ]; then
-    if check_command apt-get; then
-      print_info "Debian/Ubuntu detected"
-      sudo apt-get update
-    elif check_command dnf; then
-      print_info "Fedora/RHEL detected"
-      sudo dnf check-update
-    elif check_command pacman; then
-      print_info "Arch Linux detected"
-      sudo pacman -Sy
-    elif ! check_command brew; then
-      print_info "Installing Homebrew for Linux..."
+  # If not in update mode, install package managers and dependencies
+  if [ "$UPDATE_MODE" = false ]; then
+    # Install package managers if needed
+    if [ "$OS" = "macOS" ] && ! check_command brew; then
+      print_info "Homebrew not found. Installing..."
       install_homebrew
+    elif [ "$OS" = "Linux" ]; then
+      if check_command apt-get; then
+        print_info "Debian/Ubuntu detected"
+        sudo apt-get update
+      elif check_command dnf; then
+        print_info "Fedora/RHEL detected"
+        sudo dnf check-update
+      elif check_command pacman; then
+        print_info "Arch Linux detected"
+        sudo pacman -Sy
+      elif ! check_command brew; then
+        print_info "Installing Homebrew for Linux..."
+        install_homebrew
+      fi
     fi
-  fi
 
-  # Install dependencies
-  print_info "Installing dependencies..."
+    # Install dependencies
+    print_info "Installing dependencies..."
+  else
+    print_info "Running in update mode - skipping dependency installation"
+  fi
 
   # Install essential dependencies first
   if ! check_command git; then
@@ -611,9 +648,14 @@ backup_if_exists() {
   return 1
 }
 
-# Always backup existing configs
-SHOULD_BACKUP=true
-print_info "Will automatically backup any existing configurations"
+# Determine backup behavior based on update mode
+if [ "$UPDATE_MODE" = true ]; then
+  SHOULD_BACKUP=false
+  print_info "Update mode: Will keep and overwrite existing configurations"
+else
+  SHOULD_BACKUP=true
+  print_info "Will automatically backup any existing configurations"
+fi
 
 # Create symlinks
 print_info "Creating symlinks and configuring applications..."
@@ -738,8 +780,8 @@ if [ "$SKIP_NEOVIM" = false ] && check_command nvim; then
       NVIM_CONFIG_DIR="$HOME/.config/nvim"
       NVIM_INIT_PATH="$NVIM_CONFIG_DIR/init.vim"
       
-      # Create a backup of the original init.vim if not already backed up
-      if [ ! -f "$NVIM_INIT_PATH.original" ] && [ -f "$NVIM_INIT_PATH" ]; then
+      # Create a backup of the original init.vim if not already backed up and not in update mode
+      if [ ! -f "$NVIM_INIT_PATH.original" ] && [ -f "$NVIM_INIT_PATH" ] && [ "$UPDATE_MODE" = false ]; then
         cp "$NVIM_INIT_PATH" "$NVIM_INIT_PATH.original"
       fi
       
@@ -766,17 +808,27 @@ inoremap <C-Space> <C-x><C-o>
       fi
     fi
     
-    print_info "Installing Neovim plugins..."
-    # Use a safer approach to install plugins
-    nvim --headless +PlugInstall +qall 2>/dev/null || true
-    print_success "Neovim plugins installed!"
+    print_info "Installing/Updating Neovim plugins..."
+    # Use a safer approach to install plugins - PlugUpdate instead of PlugInstall in update mode
+    if [ "$UPDATE_MODE" = true ]; then
+      nvim --headless +PlugUpdate +qall 2>/dev/null || true
+      print_success "Neovim plugins updated!"
+    else
+      nvim --headless +PlugInstall +qall 2>/dev/null || true
+      print_success "Neovim plugins installed!"
+    fi
     
     # Check for Node.js (required for CoC) and only if we don't have a no-coc flag
     if [ ! -f "$HOME/.config/nvim/.no-coc" ] && command -v node &> /dev/null; then
       print_info "Installing CoC extensions for Neovim..."
-      # Install CoC extensions
-      nvim --headless +"CocInstall -sync coc-json coc-yaml coc-toml coc-tsserver coc-markdownlint" +qall 2>/dev/null || true
-      print_success "CoC extensions installed!"
+      # Install/Update CoC extensions
+      if [ "$UPDATE_MODE" = true ]; then
+        nvim --headless +"CocUpdate" +qall 2>/dev/null || true
+        print_success "CoC extensions updated!"
+      else
+        nvim --headless +"CocInstall -sync coc-json coc-yaml coc-toml coc-tsserver coc-markdownlint" +qall 2>/dev/null || true
+        print_success "CoC extensions installed!"
+      fi
     elif [ -f "$HOME/.config/nvim/.no-coc" ]; then
       print_info "Skipping CoC extensions (Node.js not available, using fallback configuration)"
     fi
@@ -802,7 +854,12 @@ fi
 # Install fonts (if not skipped)
 if [ "$SKIP_FONTS" = false ]; then
   print_info "Installing fonts..."
-  "$DOTFILES_DIR/fonts/install-fonts.sh"
+  # Add update mode flag if we're in update mode
+  if [ "$UPDATE_MODE" = true ]; then
+    "$DOTFILES_DIR/fonts/install-fonts.sh" --update
+  else
+    "$DOTFILES_DIR/fonts/install-fonts.sh"
+  fi
 else
   print_info "Skipping font installation as requested"
 fi
@@ -814,8 +871,8 @@ if [ "$SKIP_TERMINAL" = false ]; then
   if [ -d "/Applications/iTerm.app" ] || [ -d "$HOME/Applications/iTerm.app" ]; then
     print_info "Configuring iTerm2..."
     
-    # Backup existing iTerm2 preferences if option selected
-    if [ "$SHOULD_BACKUP" = true ]; then
+    # Backup existing iTerm2 preferences if not in update mode
+    if [ "$SHOULD_BACKUP" = true ] && [ "$UPDATE_MODE" = false ]; then
       ITERM_PLIST="$HOME/Library/Preferences/com.googlecode.iterm2.plist"
       if [ -f "$ITERM_PLIST" ]; then
         backup_if_exists "$ITERM_PLIST"
@@ -845,8 +902,12 @@ if [ "$SKIP_TERMINAL" = false ]; then
   else
     # Configure Linux terminals
     print_info "Configuring terminal emulators..."
-    # Run the terminal script
-    "$DOTFILES_DIR/terminal/install-terminal-themes.sh"
+    # Run the terminal script with update flag if needed
+    if [ "$UPDATE_MODE" = true ]; then
+      "$DOTFILES_DIR/terminal/install-terminal-themes.sh" --update
+    else
+      "$DOTFILES_DIR/terminal/install-terminal-themes.sh"
+    fi
   fi
 else
   print_info "Skipping terminal configuration as requested"
@@ -901,6 +962,13 @@ done
 # Verify installations
 INSTALLATION_SUMMARY=""
 
+# Adapt summary title based on mode
+if [ "$UPDATE_MODE" = true ]; then
+  INSTALLATION_SUMMARY="${INSTALLATION_SUMMARY}\n${BLUE}Configuration Status:${NC}"
+else
+  INSTALLATION_SUMMARY="${INSTALLATION_SUMMARY}\n${BLUE}Installation Status:${NC}"
+fi
+
 if check_command zsh; then
   INSTALLATION_SUMMARY="${INSTALLATION_SUMMARY}\n✓ Zsh is available"
 else
@@ -946,13 +1014,37 @@ if check_command code; then
   fi
 fi
 
+# Add Git configuration status
+if [ -f "$HOME/.gitconfig.local" ]; then
+  INSTALLATION_SUMMARY="${INSTALLATION_SUMMARY}\n✓ Git local configuration is in place"
+else
+  INSTALLATION_SUMMARY="${INSTALLATION_SUMMARY}\n✗ Git local configuration is missing"
+fi
+
 # Display status and next steps
-echo -e "\n${GREEN}All dotfiles have been linked!${NC}"
+if [ "$UPDATE_MODE" = true ]; then
+  echo -e "\n${GREEN}All dotfiles have been updated!${NC}"
+else
+  echo -e "\n${GREEN}All dotfiles have been linked!${NC}"
+fi
+
 print_info "Note: You may need to restart your terminal to see all changes."
 print_info "To apply zsh changes without restarting: source ~/.zshrc"
 
 # Print installation summary
 echo -e "\n${BLUE}Installation Summary:${NC}${INSTALLATION_SUMMARY}"
 
-echo -e "\n${GREEN}Installation completed in ${MINUTES}m ${SECONDS}s${NC}"
+# Auto-update info
+if [ "$UPDATE_MODE" = true ]; then
+  echo -e "\n${BLUE}Update Information:${NC}"
+  echo -e "✓ This was an update operation"
+  echo -e "• To set up automated weekly updates, run: ./install.sh --setup-auto-update"
+  echo -e "• To manually update in the future, run: ./install.sh --pull --update"
+fi
+
+if [ "$UPDATE_MODE" = true ]; then
+  echo -e "\n${GREEN}Update completed in ${MINUTES}m ${SECONDS}s${NC}"
+else
+  echo -e "\n${GREEN}Installation completed in ${MINUTES}m ${SECONDS}s${NC}"
+fi
 fi
