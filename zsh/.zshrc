@@ -111,7 +111,7 @@ if command -v git &>/dev/null; then
   fi
   
   # Personal git identity alias
-  alias git\'sme="git config --local user.name \"$GIT_USER_NAME\" && git config --local user.email \"$GIT_USER_EMAIL\" && echo \"Git identity set to $GIT_USER_NAME\""
+  alias gitsme="git config --local user.name \"$GIT_USER_NAME\" && git config --local user.email \"$GIT_USER_EMAIL\" && echo \"Git identity set to $GIT_USER_NAME\""
   
   # Compare branch to main/master
   alias gdiff="git diff \$(git rev-parse --abbrev-ref HEAD) \$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')"
