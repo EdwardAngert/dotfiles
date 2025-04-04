@@ -240,6 +240,34 @@ else
   else
     print_success "git is already installed"
   fi
+  
+  # Install tig (text-mode interface for Git)
+  if ! check_command tig; then
+    print_info "Installing tig (text-mode interface for Git)..."
+    if [ "$OS" = "macOS" ]; then
+      brew install tig
+    elif [ "$OS" = "Linux" ]; then
+      if check_command apt-get; then
+        sudo apt-get install -y tig
+      elif check_command dnf; then
+        sudo dnf install -y tig
+      elif check_command pacman; then
+        sudo pacman -S --noconfirm tig
+      elif check_command brew; then
+        brew install tig
+      else
+        print_warning "Could not install tig. You can install it manually later."
+      fi
+    fi
+    
+    if check_command tig; then
+      print_success "tig installed successfully"
+    else
+      print_warning "Failed to install tig, but continuing with installation. You can install tig manually later."
+    fi
+  else
+    print_success "tig is already installed"
+  fi
 
   # Install curl for downloading
   if ! check_command curl; then
@@ -1108,6 +1136,12 @@ if check_command nvim; then
   INSTALLATION_SUMMARY="${INSTALLATION_SUMMARY}\n✓ Neovim is available"
 else
   INSTALLATION_SUMMARY="${INSTALLATION_SUMMARY}\n✗ Neovim was not installed properly"
+fi
+
+if check_command tig; then
+  INSTALLATION_SUMMARY="${INSTALLATION_SUMMARY}\n✓ Tig is available"
+else
+  INSTALLATION_SUMMARY="${INSTALLATION_SUMMARY}\n✗ Tig was not installed properly"
 fi
 
 if [ -f "$HOME/.config/nvim/init.vim" ]; then
