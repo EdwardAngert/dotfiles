@@ -5,42 +5,50 @@ endif
 
 " Basic Settings (can be overridden by personal.vim)
 if !exists('g:basic_settings_loaded')
-  set number
-  set relativenumber
-  set expandtab
-  set tabstop=2
-  set shiftwidth=2
-  set softtabstop=2
-  set autoindent
-  set smartindent
-  set smarttab
-  set mouse=a
-  set clipboard=unnamed
-  set ignorecase
-  set smartcase
-  set incsearch
-  set hlsearch
-  set colorcolumn=80,120
-  set cursorline
-  " Only use termguicolors if supported
-  if has('termguicolors')
-    set termguicolors
-  endif
-  set scrolloff=8
-  " Only use signcolumn if supported
+  set number          " Simple line numbers (no relative)
+  set expandtab       " Tabs are spaces
+  set tabstop=2       " Number of spaces per tab
+  set shiftwidth=2    " Spaces for autoindent
+  set softtabstop=2   " Spaces per tab when editing
+  set autoindent      " Auto indent based on previous line
+  set smartindent     " Smart autoindent for C-like programs
+  set smarttab        " Smart handling of tab at start of line
+  set mouse=a         " Enable mouse support
+  set clipboard=unnamed " Use system clipboard
+  set wildmenu        " Show autocompletion menu
+  set hidden          " Allow unsaved buffers to be hidden
+  
+  " Search settings
+  set ignorecase      " Case insensitive search...
+  set smartcase       " ...unless search contains uppercase
+  set incsearch       " Incremental search
+  set hlsearch        " Highlight search results
+  
+  " UI settings
+  set cursorline      " Highlight current line
+  set colorcolumn=80,120 " Show guides at 80 and 120 chars
   if exists('&signcolumn')
-    set signcolumn=yes
+    set signcolumn=yes " Always show sign column for git markers etc.
   endif
-  set updatetime=100
-  set encoding=utf-8
-  set nobackup
-  set nowritebackup
-  set noswapfile
+  set scrolloff=8     " Keep cursor 8 lines from edge when scrolling
+  
+  " File settings
+  set encoding=utf-8  " UTF-8 encoding
+  set nobackup        " No backup files
+  set nowritebackup   " No backup while editing
+  set noswapfile      " No swap files
+  
+  " Colors
+  if has('termguicolors')
+    set termguicolors " Use true colors in terminal
+  endif
+  set updatetime=100  " Faster updates for gitgutter etc.
+  
   let g:basic_settings_loaded = 1
 endif
 
 " Key mappings
-let mapleader = " "
+let mapleader = " " " Space as leader key
 
 " Plugin management with vim-plug (only if installed)
 if filereadable(expand('~/.vim/autoload/plug.vim')) || filereadable(expand('~/.local/share/nvim/site/autoload/plug.vim'))
@@ -52,17 +60,36 @@ if filereadable(expand('~/.vim/autoload/plug.vim')) || filereadable(expand('~/.l
     " Skip default plugins as they were defined in personal.vim
   else
     " Core plugins
+    " Code completion and assistance
     Plug 'neoclide/coc.nvim', {'branch': 'release'}
     let g:coc_disable_startup_warning = 1
+    
+    " Syntax and highlighting
     Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+    
+    " Fuzzy finder
     Plug 'nvim-lua/plenary.nvim'
     Plug 'nvim-telescope/telescope.nvim'
+    
+    " Theme
     Plug 'catppuccin/nvim', { 'as': 'catppuccin' }
-    Plug 'jiangmiao/auto-pairs'
+    
+    " Git integration
+    Plug 'tpope/vim-fugitive'
+    Plug 'airblade/vim-gitgutter'
+    
+    " UI enhancements
+    Plug 'itchyny/lightline.vim'
+    Plug 'Yggdroot/indentLine'
+    
+    " Text editing helpers
     Plug 'tpope/vim-commentary'
     Plug 'tpope/vim-surround'
-    Plug 'airblade/vim-gitgutter'
-    Plug 'itchyny/lightline.vim'
+    Plug 'godlygeek/tabular'
+    
+    " Markdown support
+    Plug 'plasticboy/vim-markdown'
+    let g:vim_markdown_frontmatter = 1 " YAML syntax highlighting
     
     " Load additional plugins if specified
     if exists('g:additional_plugins') && type(g:additional_plugins) == 3  " Check if it's a list
@@ -111,8 +138,21 @@ EOF
     silent! execute 'colorscheme ' . g:preferred_colorscheme
   endif
   
-  " Configure lightline to use Catppuccin
-  let g:lightline = {'colorscheme': 'catppuccin'}
+  " Configure lightline to use Catppuccin and show branch
+  let g:lightline = {
+      \ 'colorscheme': 'catppuccin',
+      \ 'active': {
+      \   'left': [ [ 'mode', 'paste' ],
+      \             [ 'gitbranch', 'readonly', 'filename', 'modified' ] ]
+      \ },
+      \ 'component_function': {
+      \   'gitbranch': 'FugitiveHead'
+      \ },
+      \ }
+
+  " Indent Line settings
+  let g:indentLine_char = '│'
+  let g:indentLine_enabled = 1
 
   " Telescope mappings
   nnoremap <leader>ff <cmd>Telescope find_files<cr>
