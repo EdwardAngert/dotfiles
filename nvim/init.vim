@@ -270,16 +270,36 @@ EOF
   nnoremap <leader>fb <cmd>Telescope buffers<cr>
   nnoremap <leader>fh <cmd>Telescope help_tags<cr>
 else
-  " Fallback theme if no plugins
+  " Fallback theme if no plugins or in minimal environments
   if !has('gui_running')
     set t_Co=256
   endif
-  silent! colorscheme default
   
-  " Basic file finder mapping without telescope
+  try
+    silent! colorscheme default
+  catch
+    " Do nothing if colorscheme fails
+  endtry
+  
+  " Basic file finder mappings for minimal environments
   nnoremap <leader>ff :find *
   nnoremap <leader>fg :grep<space>
   nnoremap <leader>fb :ls<cr>:b<space>
+  
+  " Add some useful basic mappings even without plugins
+  nnoremap <leader>w :w<CR>
+  nnoremap <leader>q :q<CR>
+  nnoremap <leader>e :e 
+  
+  " Basic splits
+  nnoremap <leader>v :vsplit<CR>
+  nnoremap <leader>s :split<CR>
+  
+  " Navigation
+  nnoremap <C-h> <C-w>h
+  nnoremap <C-j> <C-w>j
+  nnoremap <C-k> <C-w>k
+  nnoremap <C-l> <C-w>l
 endif
 
 " Auto Commands
@@ -360,23 +380,25 @@ nnoremap <leader>gb :Git blame<CR>                   " Git blame
 " Telescope configuration with FZF integration
 augroup TelescopeSetup
   autocmd!
-  autocmd VimEnter * lua << EOF
-    if pcall(require, 'telescope') then
-      require('telescope').setup {
-        extensions = {
-          fzf = {
-            fuzzy = true,                              -- Enable fuzzy matching
-            override_generic_sorter = true,            -- Override the default sorter
-            override_file_sorter = true,               -- Override the file sorter
-            case_mode = "smart_case"                   -- Smart case sensitivity
+  if has('nvim-0.5') && has('lua')
+    autocmd VimEnter * silent! lua << EOF
+      local status_ok, telescope = pcall(require, 'telescope')
+      if status_ok then
+        telescope.setup {
+          extensions = {
+            fzf = {
+              fuzzy = true,
+              override_generic_sorter = true,
+              override_file_sorter = true,
+              case_mode = "smart_case"
+            }
           }
         }
-      }
-      
-      -- Try to load FZF extension safely
-      pcall(function() require('telescope').load_extension('fzf') end)
-    end
+        
+        pcall(telescope.load_extension, 'fzf')
+      end
 EOF
+  endif
 augroup END
 
 " Telescope key mappings

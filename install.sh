@@ -741,12 +741,31 @@ if [ "$SKIP_NEOVIM" = false ]; then
       if [ -f "$DOTFILES_DIR/nvim/personal.monokai.vim" ]; then
         TEMPLATES_AVAILABLE="${TEMPLATES_AVAILABLE}monokai "
       fi
+      if [ -f "$DOTFILES_DIR/nvim/personal.nolua.vim" ]; then
+        TEMPLATES_AVAILABLE="${TEMPLATES_AVAILABLE}nolua "
+      fi
+      if [ -f "$DOTFILES_DIR/nvim/personal.nococ.vim" ]; then
+        TEMPLATES_AVAILABLE="${TEMPLATES_AVAILABLE}nococ "
+      fi
+      
+      # Check if Neovim has Lua support
+      HAS_LUA=false
+      if check_command nvim; then
+        if nvim --headless -c "if has('nvim-0.5') && has('lua') | echo 'has_lua' | else | echo 'no_lua' | endif" -c q 2>&1 | grep -q "has_lua"; then
+          HAS_LUA=true
+          print_info "Detected Neovim with Lua support"
+        else
+          print_warning "Neovim without Lua support detected, will use compatible configuration"
+        fi
+      fi
       
       # Determine which template to use
       TEMPLATE_CHOICE=""
       if [ "$UPDATE_MODE" = true ] && [ -n "$TEMPLATES_AVAILABLE" ]; then
-        # In update mode, default to basic template
-        if [ -f "$DOTFILES_DIR/nvim/personal.vim.template" ]; then
+        # In update mode, choose template based on capabilities
+        if [ "$HAS_LUA" = false ] && [ -f "$DOTFILES_DIR/nvim/personal.nolua.vim" ]; then
+          TEMPLATE_CHOICE="nolua"
+        elif [ ! -f "$HOME/.config/nvim/.no-coc" ] && [ -f "$DOTFILES_DIR/nvim/personal.vim.template" ]; then
           TEMPLATE_CHOICE="default"
         elif [ -f "$DOTFILES_DIR/nvim/personal.catppuccin.vim" ]; then
           TEMPLATE_CHOICE="catppuccin"
@@ -754,13 +773,26 @@ if [ "$SKIP_NEOVIM" = false ]; then
       elif [ -n "$TEMPLATES_AVAILABLE" ]; then
         # In interactive mode, ask user for preference if stdout is a tty
         if [ -t 1 ]; then
-          echo -e "\nAvailable Neovim templates: ${TEMPLATES_AVAILABLE}"
-          echo -e "Which template would you like to use? (default/catppuccin/monokai) [default]: "
-          read -r TEMPLATE_CHOICE
-          TEMPLATE_CHOICE=${TEMPLATE_CHOICE:-default}
+          # Filter available templates based on system capabilities
+          if [ "$HAS_LUA" = false ]; then
+            echo -e "\nDetected Neovim without Lua support."
+            echo -e "Available Neovim templates: nolua nococ default"
+            echo -e "Which template would you like to use? (nolua/nococ/default) [nolua]: "
+            read -r TEMPLATE_CHOICE
+            TEMPLATE_CHOICE=${TEMPLATE_CHOICE:-nolua}
+          else
+            echo -e "\nAvailable Neovim templates: ${TEMPLATES_AVAILABLE}"
+            echo -e "Which template would you like to use? (default/catppuccin/monokai/nococ/nolua) [default]: "
+            read -r TEMPLATE_CHOICE
+            TEMPLATE_CHOICE=${TEMPLATE_CHOICE:-default}
+          fi
         else
-          # Non-interactive, use default
-          TEMPLATE_CHOICE="default"
+          # Non-interactive mode
+          if [ "$HAS_LUA" = false ] && [ -f "$DOTFILES_DIR/nvim/personal.nolua.vim" ]; then
+            TEMPLATE_CHOICE="nolua"
+          else
+            TEMPLATE_CHOICE="default"
+          fi
         fi
       fi
       
@@ -782,6 +814,26 @@ if [ "$SKIP_NEOVIM" = false ]; then
             print_success "Created $personal_nvim_path with Monokai theme configuration"
           else
             print_error "Monokai template not found, falling back to default"
+            cp "$DOTFILES_DIR/nvim/personal.vim.template" "$personal_nvim_path"
+            print_info "Created $personal_nvim_path template for custom Neovim configuration"
+          fi
+          ;;
+        nolua)
+          if [ -f "$DOTFILES_DIR/nvim/personal.nolua.vim" ]; then
+            cp "$DOTFILES_DIR/nvim/personal.nolua.vim" "$personal_nvim_path"
+            print_success "Created $personal_nvim_path with no-Lua compatible configuration"
+          else
+            print_error "No-Lua template not found, falling back to default"
+            cp "$DOTFILES_DIR/nvim/personal.vim.template" "$personal_nvim_path"
+            print_info "Created $personal_nvim_path template for custom Neovim configuration"
+          fi
+          ;;
+        nococ)
+          if [ -f "$DOTFILES_DIR/nvim/personal.nococ.vim" ]; then
+            cp "$DOTFILES_DIR/nvim/personal.nococ.vim" "$personal_nvim_path"
+            print_success "Created $personal_nvim_path with CoC-less configuration"
+          else
+            print_error "No-CoC template not found, falling back to default"
             cp "$DOTFILES_DIR/nvim/personal.vim.template" "$personal_nvim_path"
             print_info "Created $personal_nvim_path template for custom Neovim configuration"
           fi
