@@ -241,6 +241,105 @@ else
   else
     print_success "curl is already installed"
   fi
+  
+  # Install Node.js (required for Neovim CoC)
+  NODE_INSTALL_SUCCESS=false
+  if ! check_command node; then
+    print_info "Installing Node.js (required for Neovim code completion)..."
+    if [ "$OS" = "macOS" ]; then
+      brew install node >/dev/null 2>&1 && NODE_INSTALL_SUCCESS=true
+    elif [ "$OS" = "Linux" ]; then
+      if check_command apt-get; then
+        # First try the system package manager
+        if sudo apt-get install -y nodejs npm >/dev/null 2>&1; then
+          NODE_INSTALL_SUCCESS=true
+        else
+          # If that fails, try NodeSource
+          print_info "Trying alternative Node.js installation method..."
+          # Download to a temp file first for security
+          TEMP_NODEJS_SCRIPT=$(mktemp)
+          if curl -fsSL https://deb.nodesource.com/setup_lts.x -o "$TEMP_NODEJS_SCRIPT" 2>/dev/null; then
+            if sudo -E bash "$TEMP_NODEJS_SCRIPT" >/dev/null 2>&1; then
+              if sudo apt-get install -y nodejs >/dev/null 2>&1; then
+                NODE_INSTALL_SUCCESS=true
+              fi
+            fi
+            # Remove the temp file
+            rm -f "$TEMP_NODEJS_SCRIPT"
+          fi
+        fi
+      elif check_command dnf; then
+        sudo dnf install -y nodejs >/dev/null 2>&1 && NODE_INSTALL_SUCCESS=true
+      elif check_command pacman; then
+        sudo pacman -S --noconfirm nodejs npm >/dev/null 2>&1 && NODE_INSTALL_SUCCESS=true
+      elif check_command brew; then
+        brew install node >/dev/null 2>&1 && NODE_INSTALL_SUCCESS=true
+      fi
+      
+      # If all package managers fail, try NVM as a fallback
+      if [ "$NODE_INSTALL_SUCCESS" = false ] && command -v curl &>/dev/null; then
+        print_info "Trying to install Node.js via NVM..."
+        # Install NVM
+        export NVM_DIR="$HOME/.nvm"
+        if [ ! -d "$NVM_DIR" ]; then
+          mkdir -p "$NVM_DIR"
+          # Download to a temp file first for security
+          TEMP_NVM_SCRIPT=$(mktemp)
+          if curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh -o "$TEMP_NVM_SCRIPT" 2>/dev/null; then
+            bash "$TEMP_NVM_SCRIPT" >/dev/null 2>&1
+            rm -f "$TEMP_NVM_SCRIPT"
+          fi
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" >/dev/null 2>&1
+        fi
+        
+        # Install Node.js via NVM if NVM is available
+        if command -v nvm &>/dev/null; then
+          nvm install --lts >/dev/null 2>&1 && NODE_INSTALL_SUCCESS=true
+          nvm use --lts >/dev/null 2>&1
+        fi
+      fi
+    fi
+    
+    if check_command node; then
+      print_success "Node.js installed successfully"
+      NODE_INSTALL_SUCCESS=true
+    else
+      print_warning "Failed to install Node.js. Creating fallback configuration for Neovim without CoC."
+      # Create a flag file to indicate we should use a CoC-less config
+      touch "$HOME/.config/nvim/.no-coc"
+    fi
+  else
+    print_success "Node.js is already installed"
+    NODE_INSTALL_SUCCESS=true
+  fi
+  
+  # Install build tools (for telescope-fzf-native and other plugins)
+  if ! check_command make || ! check_command gcc; then
+    print_info "Installing build tools (required for some Neovim plugins)..."
+    if [ "$OS" = "macOS" ]; then
+      xcode-select --install 2>/dev/null || true
+    elif [ "$OS" = "Linux" ]; then
+      if check_command apt-get; then
+        sudo apt-get install -y build-essential
+      elif check_command dnf; then
+        sudo dnf groupinstall -y "Development Tools"
+      elif check_command pacman; then
+        sudo pacman -S --noconfirm base-devel
+      elif check_command brew; then
+        brew install gcc make
+      else
+        print_warning "Could not install build tools. Some Neovim plugins might not work properly."
+      fi
+    fi
+    
+    if check_command make && check_command gcc; then
+      print_success "Build tools installed successfully"
+    else
+      print_warning "Failed to install build tools. Some Neovim plugins might have limited functionality."
+    fi
+  else
+    print_success "Build tools are already installed"
+  fi
 
   # Install zsh
   if ! check_command zsh; then
@@ -626,10 +725,67 @@ fi
 # Install Neovim plugins (if not skipped)
 if [ "$SKIP_NEOVIM" = false ] && check_command nvim; then
   if [ -f "${XDG_DATA_HOME:-$HOME/.local/share}/nvim/site/autoload/plug.vim" ] || [ -f "$HOME/.vim/autoload/plug.vim" ]; then
+    # Check if we need to use a CoC-less configuration
+    if [ -f "$HOME/.config/nvim/.no-coc" ] || [ "$NODE_INSTALL_SUCCESS" = false ]; then
+      # CoC can't be used, so let's create a modified init.vim that doesn't depend on it
+      print_info "Creating CoC-less Neovim configuration..."
+      NVIM_CONFIG_DIR="$HOME/.config/nvim"
+      NVIM_INIT_PATH="$NVIM_CONFIG_DIR/init.vim"
+      
+      # Create a backup of the original init.vim if not already backed up
+      if [ ! -f "$NVIM_INIT_PATH.original" ] && [ -f "$NVIM_INIT_PATH" ]; then
+        cp "$NVIM_INIT_PATH" "$NVIM_INIT_PATH.original"
+      fi
+      
+      # Use a CoC-less configuration if available
+      if [ -f "$DOTFILES_DIR/nvim/personal.nococ.vim" ]; then
+        # Use the pre-made CoC-less configuration
+        mkdir -p "$NVIM_CONFIG_DIR"
+        cp "$DOTFILES_DIR/nvim/personal.nococ.vim" "$NVIM_CONFIG_DIR/personal.vim"
+        print_success "Using pre-configured Node.js-free Neovim setup"
+      # Fallback to modifying existing init.vim as a last resort
+      elif [ -f "$NVIM_INIT_PATH" ]; then
+        # Replace CoC with simple autocompletion
+        sed -i.bak '/neoclide\/coc.nvim/d' "$NVIM_INIT_PATH" 2>/dev/null || sed -i '' '/neoclide\/coc.nvim/d' "$NVIM_INIT_PATH"
+        sed -i.bak '/g:coc_/d' "$NVIM_INIT_PATH" 2>/dev/null || sed -i '' '/g:coc_/d' "$NVIM_INIT_PATH"
+        
+        # Add simple autocompletion
+        echo '
+" Simple built-in autocompletion (since CoC is not available)
+set omnifunc=syntaxcomplete#Complete
+inoremap <C-Space> <C-x><C-o>
+' >> "$NVIM_INIT_PATH"
+        
+        print_success "Created basic Node.js-free Neovim configuration"
+      fi
+    fi
+    
     print_info "Installing Neovim plugins..."
     # Use a safer approach to install plugins
     nvim --headless +PlugInstall +qall 2>/dev/null || true
     print_success "Neovim plugins installed!"
+    
+    # Check for Node.js (required for CoC) and only if we don't have a no-coc flag
+    if [ ! -f "$HOME/.config/nvim/.no-coc" ] && command -v node &> /dev/null; then
+      print_info "Installing CoC extensions for Neovim..."
+      # Install CoC extensions
+      nvim --headless +"CocInstall -sync coc-json coc-yaml coc-toml coc-tsserver coc-markdownlint" +qall 2>/dev/null || true
+      print_success "CoC extensions installed!"
+    elif [ -f "$HOME/.config/nvim/.no-coc" ]; then
+      print_info "Skipping CoC extensions (Node.js not available, using fallback configuration)"
+    fi
+    
+    # Make sure telescope-fzf-native is built (requires make, gcc, etc.)
+    if command -v make &> /dev/null && (command -v gcc &> /dev/null || command -v clang &> /dev/null); then
+      TELESCOPE_FZF_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/nvim/plugged/telescope-fzf-native.nvim"
+      if [ -d "$TELESCOPE_FZF_DIR" ]; then
+        print_info "Building telescope-fzf-native..."
+        (cd "$TELESCOPE_FZF_DIR" && make) 2>/dev/null || true
+        print_success "telescope-fzf-native built!"
+      fi
+    else
+      print_warning "Building tools (make, gcc) not found. telescope-fzf-native won't be built. Install them for faster fuzzy finding."
+    fi
   else
     print_warning "vim-plug not found. Skipping Neovim plugin installation."
   fi
@@ -728,9 +884,54 @@ EXECUTION_TIME=$((END_TIME - START_TIME))
 MINUTES=$((EXECUTION_TIME / 60))
 SECONDS=$((EXECUTION_TIME % 60))
 
+# Cleanup any temporary files that might have been left behind
+for TEMP_FILE in "$TEMP_NODEJS_SCRIPT" "$TEMP_NVM_SCRIPT"; do
+  if [ -n "$TEMP_FILE" ] && [ -f "$TEMP_FILE" ]; then
+    rm -f "$TEMP_FILE"
+  fi
+done
 
+
+# Verify installations
+INSTALLATION_SUMMARY=""
+
+if check_command zsh; then
+  INSTALLATION_SUMMARY="${INSTALLATION_SUMMARY}\n✓ Zsh is available"
+else
+  INSTALLATION_SUMMARY="${INSTALLATION_SUMMARY}\n✗ Zsh was not installed properly"
+fi
+
+if check_command nvim; then
+  INSTALLATION_SUMMARY="${INSTALLATION_SUMMARY}\n✓ Neovim is available"
+else
+  INSTALLATION_SUMMARY="${INSTALLATION_SUMMARY}\n✗ Neovim was not installed properly"
+fi
+
+if [ -f "$HOME/.config/nvim/init.vim" ]; then
+  INSTALLATION_SUMMARY="${INSTALLATION_SUMMARY}\n✓ Neovim configuration is in place"
+else
+  INSTALLATION_SUMMARY="${INSTALLATION_SUMMARY}\n✗ Neovim configuration is missing"
+fi
+
+if [ -f "$HOME/.zshrc" ]; then
+  INSTALLATION_SUMMARY="${INSTALLATION_SUMMARY}\n✓ Zsh configuration is in place"
+else
+  INSTALLATION_SUMMARY="${INSTALLATION_SUMMARY}\n✗ Zsh configuration is missing"
+fi
+
+if command -v node &>/dev/null; then
+  INSTALLATION_SUMMARY="${INSTALLATION_SUMMARY}\n✓ Node.js is available (for Neovim CoC)"
+else
+  INSTALLATION_SUMMARY="${INSTALLATION_SUMMARY}\n✗ Node.js is not available (Neovim CoC disabled)"
+fi
+
+# Display status and next steps
 echo -e "\n${GREEN}All dotfiles have been linked!${NC}"
 print_info "Note: You may need to restart your terminal to see all changes."
 print_info "To apply zsh changes without restarting: source ~/.zshrc"
+
+# Print installation summary
+echo -e "\n${BLUE}Installation Summary:${NC}${INSTALLATION_SUMMARY}"
+
 echo -e "\n${GREEN}Installation completed in ${MINUTES}m ${SECONDS}s${NC}"
 fi
