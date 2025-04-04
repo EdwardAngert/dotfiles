@@ -16,6 +16,42 @@ if !exists('g:basic_settings_loaded')
   set mouse=a         " Enable mouse support
   set clipboard=unnamed " Use system clipboard
   set wildmenu        " Show autocompletion menu
+  
+  " Clipboard configuration for various platforms
+  if has('unix')
+    if system('uname -s') =~ 'Darwin'
+      " macOS - built-in clipboard should work
+    else
+      " Linux - try to use xclip or xsel if available
+      if executable('xclip')
+        let g:clipboard = {
+          \ 'name': 'xclip',
+          \ 'copy': {
+          \    '+': 'xclip -selection clipboard',
+          \    '*': 'xclip -selection clipboard',
+          \  },
+          \ 'paste': {
+          \    '+': 'xclip -selection clipboard -o',
+          \    '*': 'xclip -selection clipboard -o',
+          \ },
+          \ 'cache_enabled': 0,
+          \ }
+      elseif executable('xsel')
+        let g:clipboard = {
+          \ 'name': 'xsel',
+          \ 'copy': {
+          \    '+': 'xsel --clipboard --input',
+          \    '*': 'xsel --clipboard --input',
+          \  },
+          \ 'paste': {
+          \    '+': 'xsel --clipboard --output',
+          \    '*': 'xsel --clipboard --output',
+          \ },
+          \ 'cache_enabled': 0,
+          \ }
+      endif
+    endif
+  endif
   set hidden          " Allow unsaved buffers to be hidden
   
   " Search settings
@@ -325,17 +361,21 @@ nnoremap <leader>gb :Git blame<CR>                   " Git blame
 augroup TelescopeSetup
   autocmd!
   autocmd VimEnter * lua << EOF
-    require('telescope').setup {
-      extensions = {
-        fzf = {
-          fuzzy = true,                              -- Enable fuzzy matching
-          override_generic_sorter = true,            -- Override the default sorter
-          override_file_sorter = true,               -- Override the file sorter
-          case_mode = "smart_case"                   -- Smart case sensitivity
+    if pcall(require, 'telescope') then
+      require('telescope').setup {
+        extensions = {
+          fzf = {
+            fuzzy = true,                              -- Enable fuzzy matching
+            override_generic_sorter = true,            -- Override the default sorter
+            override_file_sorter = true,               -- Override the file sorter
+            case_mode = "smart_case"                   -- Smart case sensitivity
+          }
         }
       }
-    }
-    require('telescope').load_extension('fzf')       -- Load the FZF extension
+      
+      -- Try to load FZF extension safely
+      pcall(function() require('telescope').load_extension('fzf') end)
+    end
 EOF
 augroup END
 
