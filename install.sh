@@ -7,6 +7,30 @@ IFS=$'\n\t'
 # Start timing the script execution
 START_TIME=$(date +%s)
 
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Helper functions
+print_info() {
+  echo -e "${BLUE}INFO:${NC} $1"
+}
+
+print_success() {
+  echo -e "${GREEN}SUCCESS:${NC} $1"
+}
+
+print_warning() {
+  echo -e "${YELLOW}WARNING:${NC} $1"
+}
+
+print_error() {
+  echo -e "${RED}ERROR:${NC} $1"
+}
+
 # Process CLI parameters
 SKIP_FONTS=false
 SKIP_NEOVIM=false
@@ -952,11 +976,13 @@ MINUTES=$((EXECUTION_TIME / 60))
 SECONDS=$((EXECUTION_TIME % 60))
 
 # Cleanup any temporary files that might have been left behind
-for TEMP_FILE in "$TEMP_NODEJS_SCRIPT" "$TEMP_NVM_SCRIPT"; do
-  if [ -n "$TEMP_FILE" ] && [ -f "$TEMP_FILE" ]; then
-    rm -f "$TEMP_FILE"
-  fi
-done
+if [[ -v TEMP_NODEJS_SCRIPT ]] || [[ -v TEMP_NVM_SCRIPT ]]; then
+  for TEMP_FILE in "${TEMP_NODEJS_SCRIPT:-}" "${TEMP_NVM_SCRIPT:-}"; do
+    if [ -n "$TEMP_FILE" ] && [ -f "$TEMP_FILE" ]; then
+      rm -f "$TEMP_FILE"
+    fi
+  done
+fi
 
 
 # Verify installations
