@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Enable strict mode
-set -uo pipefail
-IFS=$'\n\t'
+set -euo pipefail
+IFS=$'\n\t'$'\n\t'
 
 # Start timing the script execution
 START_TIME=$(date +%s)
@@ -94,10 +94,13 @@ while [[ "$#" -gt 0 ]]; do
   shift
 done
 
+# Create a flag file to detect if we're resuming after oh-my-zsh installation
+FLAG_FILE="/tmp/dotfiles_install_in_progress"
+
 # Handle script exit
 cleanup() {
   # Remove temporary files here if any
-  if [ -f "$FLAG_FILE" ]; then
+  if [ -n "${FLAG_FILE:-}" ] && [ -f "$FLAG_FILE" ]; then
     rm -f "$FLAG_FILE"
   fi
 }
@@ -106,30 +109,6 @@ cleanup() {
 trap 'cleanup; echo -e "\n${RED}Script interrupted. Exiting...${NC}"; exit 1' INT TERM
 trap 'cleanup' EXIT
 trap 'echo -e "${RED}ERROR:${NC} Command failed at line $LINENO: $BASH_COMMAND"' ERR
-
-# Colors
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
-
-# Helper functions
-print_info() {
-  echo -e "${BLUE}INFO:${NC} $1"
-}
-
-print_success() {
-  echo -e "${GREEN}SUCCESS:${NC} $1"
-}
-
-print_warning() {
-  echo -e "${YELLOW}WARNING:${NC} $1"
-}
-
-print_error() {
-  echo -e "${RED}ERROR:${NC} $1"
-}
 
 check_command() {
   if [ -z "$1" ]; then
@@ -144,19 +123,7 @@ check_command() {
   fi
 }
 
-run_command() {
-  if [ -z "$1" ]; then
-    print_error "No command specified for run_command"
-    return 1
-  fi
-  
-  if eval "$1"; then
-    return 0
-  else
-    print_error "Command failed: $1"
-    return 1
-  fi
-}
+# run_command function has been removed as it was unused
 
 install_homebrew() {
   print_info "Installing Homebrew..."
@@ -833,6 +800,7 @@ if [ "$SKIP_NEOVIM" = false ]; then
   else
     print_error "Neovim config file not found: $DOTFILES_DIR/nvim/init.vim"
   fi
+fi
 
 # ZSH (if not skipped)
 if [ "$SKIP_ZSH" = false ]; then
