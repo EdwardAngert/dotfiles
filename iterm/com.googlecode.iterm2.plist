@@ -89,7 +89,7 @@
 		</array>
 	</dict>
 	<key>PrefsCustomFolder</key>
-	<string>~/dotfiles/iterm</string>
+	<string>$(pwd)/iterm</string>
 	<key>SUEnableAutomaticChecks</key>
 	<true/>
 	<key>SUFeedAlternateAppNameKey</key>

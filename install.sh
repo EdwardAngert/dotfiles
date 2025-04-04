@@ -998,6 +998,16 @@ if [ "$SKIP_TERMINAL" = false ]; then
     
     # Configure iTerm2 to use our preferences
     print_info "Setting iTerm2 to load preferences from dotfiles..."
+    
+    # Update the plist file to use the current directory path
+    if [ -f "$DOTFILES_DIR/iterm/com.googlecode.iterm2.plist" ]; then
+      # Create a temporary file with the updated path
+      TMP_PLIST=$(mktemp)
+      sed "s|\$(pwd)/iterm|$DOTFILES_DIR/iterm|g" "$DOTFILES_DIR/iterm/com.googlecode.iterm2.plist" > "$TMP_PLIST"
+      mv "$TMP_PLIST" "$DOTFILES_DIR/iterm/com.googlecode.iterm2.plist"
+      print_info "Updated iTerm2 plist with correct path: $DOTFILES_DIR/iterm"
+    fi
+    
     defaults write com.googlecode.iterm2 LoadPrefsFromCustomFolder -bool true
     defaults write com.googlecode.iterm2 PrefsCustomFolder -string "$DOTFILES_DIR/iterm"
     
