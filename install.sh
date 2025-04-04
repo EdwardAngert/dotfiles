@@ -435,12 +435,30 @@ else
         # Don't automatically change the shell - we'll manually set up .zshrc
         print_success "Oh My Zsh installed successfully"
         
-        # Install Oh My Zsh plugins
-        print_info "Installing Oh My Zsh plugins..."
+        # Install Oh My Zsh plugins and themes
+        print_info "Installing Oh My Zsh plugins and themes..."
         mkdir -p "${HOME}/.oh-my-zsh/custom/plugins"
+        mkdir -p "${HOME}/.oh-my-zsh/custom/themes"
+        
+        # Install plugins
         git clone https://github.com/zsh-users/zsh-autosuggestions "${HOME}/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
         git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "${HOME}/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting"
-        print_success "Oh My Zsh plugins installed successfully"
+        
+        # Install Powerlevel10k theme
+        if [ ! -d "${HOME}/.oh-my-zsh/custom/themes/powerlevel10k" ]; then
+          print_info "Installing Powerlevel10k theme..."
+          git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${HOME}/.oh-my-zsh/custom/themes/powerlevel10k"
+          print_success "Powerlevel10k theme installed successfully"
+        fi
+        
+        # Create a basic p10k configuration if it doesn't exist
+        if [ ! -f "${HOME}/.p10k.zsh" ] && [ -f "$DOTFILES_DIR/zsh/.p10k.zsh" ]; then
+          print_info "Setting up Powerlevel10k configuration..."
+          cp "$DOTFILES_DIR/zsh/.p10k.zsh" "${HOME}/.p10k.zsh"
+          print_success "Powerlevel10k configuration created"
+        fi
+        
+        print_success "Oh My Zsh plugins and themes installed successfully"
       fi
     fi
   else
@@ -459,6 +477,21 @@ else
       mkdir -p "${HOME}/.oh-my-zsh/custom/plugins"
       git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "${HOME}/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting"
       print_success "zsh-syntax-highlighting installed successfully"
+    fi
+    
+    # Check and install Powerlevel10k theme if needed
+    if [ ! -d "${HOME}/.oh-my-zsh/custom/themes/powerlevel10k" ]; then
+      print_info "Installing Powerlevel10k theme..."
+      mkdir -p "${HOME}/.oh-my-zsh/custom/themes"
+      git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${HOME}/.oh-my-zsh/custom/themes/powerlevel10k"
+      print_success "Powerlevel10k theme installed successfully"
+    fi
+    
+    # Create a basic p10k configuration if it doesn't exist
+    if [ ! -f "${HOME}/.p10k.zsh" ] && [ -f "$DOTFILES_DIR/zsh/.p10k.zsh" ]; then
+      print_info "Setting up Powerlevel10k configuration..."
+      cp "$DOTFILES_DIR/zsh/.p10k.zsh" "${HOME}/.p10k.zsh"
+      print_success "Powerlevel10k configuration created"
     fi
   fi
 fi

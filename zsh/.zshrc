@@ -2,14 +2,16 @@
 if [ -d "$HOME/.oh-my-zsh" ]; then
   export ZSH="$HOME/.oh-my-zsh"
   
-  # Theme - can be overridden by setting ZSH_THEME before sourcing
-  : ${ZSH_THEME:="robbyrussell"}
+  # Theme - using Powerlevel10k as default, can be overridden by setting ZSH_THEME before sourcing
+  : ${ZSH_THEME:="powerlevel10k/powerlevel10k"}
   
   # Allow for personal plugins to be added before this file is sourced
   if [ -z "$CUSTOM_ZSH_PLUGINS_ADDED" ]; then
     # Base plugins
     plugins=(
       git
+      brew
+      sudo
       zsh-autosuggestions
       zsh-syntax-highlighting
       history-substring-search
@@ -262,6 +264,9 @@ if [[ -r ~/.ssh/known_hosts ]]; then
 fi
 zstyle ':completion:*:ssh:*' hosts $h
 zstyle ':completion:*:scp:*' hosts $h
+
+# Load Powerlevel10k configuration if it exists
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
 # Load local configuration if it exists
 if [ -f "$HOME/.zshrc.local" ]; then
