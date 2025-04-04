@@ -620,10 +620,16 @@ print_info "Creating symlinks and configuring applications..."
 
 # VSCode (if not skipped)
 if [ "$SKIP_VSCODE" = false ] && check_command code; then
-  # Install Catppuccin theme
-  print_info "Installing VSCode Catppuccin theme..."
+  # Install VSCode extensions
+  print_info "Installing VSCode extensions..."
+  
+  # Catppuccin theme
   code --install-extension catppuccin.catppuccin-vsc 2>/dev/null || true
   print_success "VSCode Catppuccin theme installed!"
+  
+  # Code Spell Checker
+  code --install-extension streetsidesoftware.code-spell-checker 2>/dev/null || true
+  print_success "VSCode Code Spell Checker installed!"
   
   if [ "$OS" = "macOS" ] && [ -d "$HOME/Library/Application Support/Code/User" ]; then
     vscode_config_dir="$HOME/Library/Application Support/Code/User"
@@ -923,6 +929,21 @@ if command -v node &>/dev/null; then
   INSTALLATION_SUMMARY="${INSTALLATION_SUMMARY}\n✓ Node.js is available (for Neovim CoC)"
 else
   INSTALLATION_SUMMARY="${INSTALLATION_SUMMARY}\n✗ Node.js is not available (Neovim CoC disabled)"
+fi
+
+# VSCode extensions
+if check_command code; then
+  if code --list-extensions 2>/dev/null | grep -q "catppuccin.catppuccin-vsc"; then
+    INSTALLATION_SUMMARY="${INSTALLATION_SUMMARY}\n✓ VSCode Catppuccin theme is installed"
+  else
+    INSTALLATION_SUMMARY="${INSTALLATION_SUMMARY}\n✗ VSCode Catppuccin theme installation failed"
+  fi
+  
+  if code --list-extensions 2>/dev/null | grep -q "streetsidesoftware.code-spell-checker"; then
+    INSTALLATION_SUMMARY="${INSTALLATION_SUMMARY}\n✓ VSCode Code Spell Checker is installed"
+  else
+    INSTALLATION_SUMMARY="${INSTALLATION_SUMMARY}\n✗ VSCode Code Spell Checker installation failed"
+  fi
 fi
 
 # Display status and next steps
