@@ -200,7 +200,8 @@ if filereadable(expand('~/.vim/autoload/plug.vim')) || filereadable(expand('~/.l
     " Load additional plugins if specified
     if exists('g:additional_plugins') && type(g:additional_plugins) == 3  " Check if it's a list
       for plugin in g:additional_plugins
-        execute 'Plug ' . "'" . plugin . "'"
+        " Handle both single and double quoted plugin names
+        execute 'Plug ' . "'" . substitute(plugin, "'\\|\"", "", "g") . "'"
       endfor
     endif
   endif
