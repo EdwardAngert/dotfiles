@@ -141,6 +141,13 @@ fi
 
 print_info "Detected OS: $OS"
 
+# Copy gitconfig.local template if it doesn't exist
+if [ -f "$DOTFILES_DIR/gitconfig.local.template" ] && [ ! -f "$HOME/.gitconfig.local" ]; then
+  print_info "Creating git local configuration template..."
+  cp "$DOTFILES_DIR/gitconfig.local.template" "$HOME/.gitconfig.local"
+  print_success "Created ~/.gitconfig.local template - edit this file to set your git identity"
+fi
+
 
 # Create a flag file to detect if we're resuming after oh-my-zsh installation
 FLAG_FILE="/tmp/dotfiles_install_in_progress"
@@ -525,7 +532,11 @@ if [ "$SKIP_NEOVIM" = false ]; then
 
   # Backup existing config if option selected
   if [ "$SHOULD_BACKUP" = true ] && [ -d "$nvim_config_dir" ]; then
-    backup_if_exists "$nvim_config_dir"
+    # Try to remove the directory first if it exists (safer approach)
+    if ! backup_if_exists "$nvim_config_dir"; then
+      print_warning "Could not backup Neovim config dir, attempting to remove it instead"
+      rm -rf "$nvim_config_dir" 2>/dev/null || true
+    fi
   elif [ "$SHOULD_BACKUP" = true ] && [ -f "$nvim_init_path" ]; then
     backup_if_exists "$nvim_init_path"
   fi
@@ -540,6 +551,15 @@ if [ "$SKIP_NEOVIM" = false ]; then
   if [ -f "$DOTFILES_DIR/nvim/init.vim" ]; then
     ln -sf "$DOTFILES_DIR/nvim/init.vim" "$nvim_init_path"
     print_success "Neovim config linked!"
+    
+    # Create personal.vim template if it doesn't exist
+    personal_nvim_dir="$HOME/.config/nvim"
+    personal_nvim_path="$personal_nvim_dir/personal.vim"
+    if [ ! -f "$personal_nvim_path" ] && [ -f "$DOTFILES_DIR/nvim/personal.vim.template" ]; then
+      mkdir -p "$personal_nvim_dir"
+      cp "$DOTFILES_DIR/nvim/personal.vim.template" "$personal_nvim_path"
+      print_info "Created $personal_nvim_path template for custom Neovim configuration"
+    fi
   else
     print_error "Neovim config file not found: $DOTFILES_DIR/nvim/init.vim"
   fi
@@ -558,6 +578,13 @@ if [ "$SKIP_ZSH" = false ]; then
   if [ -f "$DOTFILES_DIR/zsh/.zshrc" ]; then
     ln -sf "$DOTFILES_DIR/zsh/.zshrc" "$zsh_config_path"
     print_success "Zsh config linked!"
+    
+    # Create the .zshrc.local template if it doesn't exist
+    local_zshrc_path="$HOME/.zshrc.local"
+    if [ ! -f "$local_zshrc_path" ] && [ -f "$DOTFILES_DIR/zsh/.zshrc.local.template" ]; then
+      cp "$DOTFILES_DIR/zsh/.zshrc.local.template" "$local_zshrc_path"
+      print_info "Created $local_zshrc_path template for custom configuration"
+    fi
   else
     print_error "Zsh config file not found: $DOTFILES_DIR/zsh/.zshrc"
   fi
@@ -634,13 +661,28 @@ fi
 if [ "$SKIP_ZSH" = false ] && [ "$SHELL" != "$(which zsh)" ] && check_command zsh; then
   print_info "Setting zsh as default shell..."
   if [ -f "$(which zsh)" ]; then
+    # Try to change shell without sudo first
     if grep -q "$(which zsh)" /etc/shells; then
-      chsh -s "$(which zsh)"
+      chsh -s "$(which zsh)" 2>/dev/null || true
+    else
+      # If we can, add zsh to /etc/shells
+      if command -v sudo >/dev/null 2>&1; then
+        echo "$(which zsh)" | sudo tee -a /etc/shells 2>/dev/null || true
+        chsh -s "$(which zsh)" 2>/dev/null || true
+      fi
+    fi
+    
+    # Check if we succeeded in changing the shell
+    if [ "$SHELL" = "$(which zsh)" ]; then
       print_success "Default shell changed to zsh"
     else
-      echo "$(which zsh)" | sudo tee -a /etc/shells
-      chsh -s "$(which zsh)"
-      print_success "Default shell changed to zsh"
+      print_warning "Could not automatically change default shell to zsh. You can do this manually later with: chsh -s $(which zsh)"
+      print_info "For now, you can start zsh manually with: zsh"
+      
+      # Create a flag in the user's home directory to launch zsh on terminal start (in bash profile)
+      echo '[ -f "$(which zsh)" ] && exec "$(which zsh)" -l' >> "$HOME/.bash_profile"
+      echo '[ -f "$(which zsh)" ] && exec "$(which zsh)" -l' >> "$HOME/.bashrc"
+      print_info "Added zsh autostart to .bash_profile and .bashrc"
     fi
   else
     print_error "Could not change default shell to zsh"

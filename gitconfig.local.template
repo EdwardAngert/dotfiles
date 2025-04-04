@@ -1,0 +1,34 @@
+# This is a template for local git configuration
+# Copy this to ~/.gitconfig.local and customize
+
+[user]
+	name = Your Name
+	email = your.email@example.com
+
+[github]
+	user = yourusername
+
+# Uncomment and modify options below to override the default settings
+
+# [core]
+#	editor = code --wait  # Use VS Code as git editor
+#	excludesfile = ~/.gitignore_global
+
+# [init]
+#	defaultBranch = main
+
+# [alias]
+#	st = status
+#	co = checkout
+#	br = branch
+#	ci = commit
+#	unstage = reset HEAD --
+#	last = log -1 HEAD
+#	visual = !gitk
+#	graph = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+
+# [pull]
+#	rebase = true
+
+# [push]
+#	default = current

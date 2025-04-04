@@ -1,0 +1,46 @@
+" This is a template for personal Neovim settings
+" Copy this to ~/.config/nvim/personal.vim and customize
+
+" Uncomment and modify options below to override the default settings
+
+" ========== Plugin Management ==========
+" Set this to 1 to completely override the default plugin list
+" let g:custom_plugins_loaded = 1
+" call plug#begin('~/.vim/plugged')
+" Add your plugins here - example:
+" Plug 'tpope/vim-fugitive'
+" Plug 'preservim/nerdtree'
+" call plug#end()
+
+" To add plugins to the default list, define a list of additional plugins
+" let g:additional_plugins = ['tpope/vim-fugitive', 'preservim/nerdtree']
+
+" ========== Theme Settings ==========
+" Override the theme (default is catppuccin)
+" let g:preferred_colorscheme = 'gruvbox'  " or any other installed theme
+
+" For Catppuccin theme, customize the flavor
+" Options: 'latte', 'frappe', 'macchiato', 'mocha'
+" let g:catppuccin_flavour = 'macchiato'  
+
+" Enable transparent background (0 = disabled, 1 = enabled)
+" let g:catppuccin_transparent = 1
+
+" ========== Basic Settings ==========
+" Set to 1 after defining your settings to prevent defaults from loading
+" let g:basic_settings_loaded = 1
+
+" Example settings - uncomment and modify as needed
+" set tabstop=4
+" set shiftwidth=4
+" set expandtab
+" set norelativenumber  " Disable relative line numbers
+" set nowrap  " Disable line wrapping
+
+" ========== Custom Keymappings ==========
+" Examples:
+" nmap <C-n> :NERDTreeToggle<CR>
+" nnoremap <leader>ff <cmd>Telescope find_files<cr>
+" nnoremap <leader>fg <cmd>Telescope live_grep<cr>
+" nnoremap <leader>fb <cmd>Telescope buffers<cr>
+" nnoremap <leader>fh <cmd>Telescope help_tags<cr>
