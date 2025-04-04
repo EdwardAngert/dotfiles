@@ -1159,4 +1159,3 @@ if [ "$UPDATE_MODE" = true ]; then
 else
   echo -e "\n${GREEN}Installation completed in ${MINUTES}m ${SECONDS}s${NC}"
 fi
-fi
