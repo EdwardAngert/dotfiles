@@ -1072,7 +1072,7 @@ MINUTES=$((EXECUTION_TIME / 60))
 SECONDS=$((EXECUTION_TIME % 60))
 
 # Cleanup any temporary files that might have been left behind
-if [[ -v TEMP_NODEJS_SCRIPT ]] || [[ -v TEMP_NVM_SCRIPT ]]; then
+if [ -n "${TEMP_NODEJS_SCRIPT+x}" ] || [ -n "${TEMP_NVM_SCRIPT+x}" ]; then
   for TEMP_FILE in "${TEMP_NODEJS_SCRIPT:-}" "${TEMP_NVM_SCRIPT:-}"; do
     if [ -n "$TEMP_FILE" ] && [ -f "$TEMP_FILE" ]; then
       rm -f "$TEMP_FILE"
