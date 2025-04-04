@@ -116,6 +116,13 @@ Edit `vscode/settings.json` to customize your VSCode settings.
 
 Edit `nvim/init.vim` to customize your Neovim configuration.
 
+During installation, you can choose from several Neovim configuration templates:
+- **Default**: Basic template with minimal customization
+- **Catppuccin**: Configured with the Catppuccin color theme and additional plugins
+- **Monokai**: Configured with the Monokai color theme and additional plugins
+
+These templates are copied to `~/.config/nvim/personal.vim` and loaded automatically by the main configuration.
+
 ### Zsh
 
 Edit `zsh/.zshrc` to customize your Zsh configuration.

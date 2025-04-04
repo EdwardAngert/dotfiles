@@ -759,10 +759,76 @@ if [ "$SKIP_NEOVIM" = false ]; then
     # Create personal.vim template if it doesn't exist
     personal_nvim_dir="$HOME/.config/nvim"
     personal_nvim_path="$personal_nvim_dir/personal.vim"
-    if [ ! -f "$personal_nvim_path" ] && [ -f "$DOTFILES_DIR/nvim/personal.vim.template" ]; then
+    
+    if [ ! -f "$personal_nvim_path" ]; then
       mkdir -p "$personal_nvim_dir"
-      cp "$DOTFILES_DIR/nvim/personal.vim.template" "$personal_nvim_path"
-      print_info "Created $personal_nvim_path template for custom Neovim configuration"
+      
+      # Check for available templates
+      TEMPLATES_AVAILABLE=""
+      if [ -f "$DOTFILES_DIR/nvim/personal.vim.template" ]; then
+        TEMPLATES_AVAILABLE="${TEMPLATES_AVAILABLE}default "
+      fi
+      if [ -f "$DOTFILES_DIR/nvim/personal.catppuccin.vim" ]; then
+        TEMPLATES_AVAILABLE="${TEMPLATES_AVAILABLE}catppuccin "
+      fi
+      if [ -f "$DOTFILES_DIR/nvim/personal.monokai.vim" ]; then
+        TEMPLATES_AVAILABLE="${TEMPLATES_AVAILABLE}monokai "
+      fi
+      
+      # Determine which template to use
+      TEMPLATE_CHOICE=""
+      if [ "$UPDATE_MODE" = true ] && [ -n "$TEMPLATES_AVAILABLE" ]; then
+        # In update mode, default to basic template
+        if [ -f "$DOTFILES_DIR/nvim/personal.vim.template" ]; then
+          TEMPLATE_CHOICE="default"
+        elif [ -f "$DOTFILES_DIR/nvim/personal.catppuccin.vim" ]; then
+          TEMPLATE_CHOICE="catppuccin"
+        fi
+      elif [ -n "$TEMPLATES_AVAILABLE" ]; then
+        # In interactive mode, ask user for preference if stdout is a tty
+        if [ -t 1 ]; then
+          echo -e "\nAvailable Neovim templates: ${TEMPLATES_AVAILABLE}"
+          echo -e "Which template would you like to use? (default/catppuccin/monokai) [default]: "
+          read -r TEMPLATE_CHOICE
+          TEMPLATE_CHOICE=${TEMPLATE_CHOICE:-default}
+        else
+          # Non-interactive, use default
+          TEMPLATE_CHOICE="default"
+        fi
+      fi
+      
+      # Copy the chosen template
+      case $TEMPLATE_CHOICE in
+        catppuccin)
+          if [ -f "$DOTFILES_DIR/nvim/personal.catppuccin.vim" ]; then
+            cp "$DOTFILES_DIR/nvim/personal.catppuccin.vim" "$personal_nvim_path"
+            print_success "Created $personal_nvim_path with Catppuccin theme configuration"
+          else
+            print_error "Catppuccin template not found, falling back to default"
+            cp "$DOTFILES_DIR/nvim/personal.vim.template" "$personal_nvim_path"
+            print_info "Created $personal_nvim_path template for custom Neovim configuration"
+          fi
+          ;;
+        monokai)
+          if [ -f "$DOTFILES_DIR/nvim/personal.monokai.vim" ]; then
+            cp "$DOTFILES_DIR/nvim/personal.monokai.vim" "$personal_nvim_path"
+            print_success "Created $personal_nvim_path with Monokai theme configuration"
+          else
+            print_error "Monokai template not found, falling back to default"
+            cp "$DOTFILES_DIR/nvim/personal.vim.template" "$personal_nvim_path"
+            print_info "Created $personal_nvim_path template for custom Neovim configuration"
+          fi
+          ;;
+        *)
+          # Default template
+          if [ -f "$DOTFILES_DIR/nvim/personal.vim.template" ]; then
+            cp "$DOTFILES_DIR/nvim/personal.vim.template" "$personal_nvim_path"
+            print_info "Created $personal_nvim_path template for custom Neovim configuration"
+          else
+            print_warning "No Neovim templates available"
+          fi
+          ;;
+      esac
     fi
   else
     print_error "Neovim config file not found: $DOTFILES_DIR/nvim/init.vim"
