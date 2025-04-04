@@ -6,24 +6,23 @@
   "editor.renderWhitespace": "selection",
   "editor.rulers": [80, 120],
   "editor.minimap.enabled": false,
-  
+
   "workbench.colorTheme": "Catppuccin Mocha",
-  
-  "terminal.integrated.fontSize": 14,
+  "terminal.integrated.fontSize": 12,
   "terminal.integrated.defaultProfile.osx": "zsh",
   "terminal.integrated.defaultProfile.linux": "zsh",
-  
+
   "files.trimTrailingWhitespace": true,
   "files.insertFinalNewline": true,
   "files.autoSave": "onFocusChange",
-  
+
   "telemetry.telemetryLevel": "off",
-  
+
   "remote.SSH.connectTimeout": 1800,
   "remote.SSH.remotePlatform": {
     "coder-vscode.dev.coder.com--edward--coder-claude": "linux"
   },
-  
+
   // Code Spell Checker settings
   "cSpell.enabled": true,
   "cSpell.language": "en",
