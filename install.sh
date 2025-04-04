@@ -999,13 +999,20 @@ if [ "$SKIP_TERMINAL" = false ]; then
     # Configure iTerm2 to use our preferences
     print_info "Setting iTerm2 to load preferences from dotfiles..."
     
-    # Update the plist file to use the current directory path
+    # First ensure we have a proper plist file
     if [ -f "$DOTFILES_DIR/iterm/com.googlecode.iterm2.plist" ]; then
-      # Create a temporary file with the updated path
-      TMP_PLIST=$(mktemp)
-      sed "s|\$(pwd)/iterm|$DOTFILES_DIR/iterm|g" "$DOTFILES_DIR/iterm/com.googlecode.iterm2.plist" > "$TMP_PLIST"
-      mv "$TMP_PLIST" "$DOTFILES_DIR/iterm/com.googlecode.iterm2.plist"
-      print_info "Updated iTerm2 plist with correct path: $DOTFILES_DIR/iterm"
+      print_info "Ensuring iTerm2 plist file is properly formatted..."
+      # Validate plist format
+      if ! plutil -lint "$DOTFILES_DIR/iterm/com.googlecode.iterm2.plist" >/dev/null 2>&1; then
+        print_warning "iTerm2 plist file is malformed, creating a new properly formatted one..."
+        # Export current preferences to create a properly formatted file
+        defaults export com.googlecode.iterm2 /tmp/iterm2.plist.tmp
+        mv /tmp/iterm2.plist.tmp "$DOTFILES_DIR/iterm/com.googlecode.iterm2.plist"
+      fi
+    else
+      print_info "No existing iTerm2 plist found, creating a new one..."
+      # Export current preferences to create a properly formatted file
+      defaults export com.googlecode.iterm2 "$DOTFILES_DIR/iterm/com.googlecode.iterm2.plist"
     fi
     
     defaults write com.googlecode.iterm2 LoadPrefsFromCustomFolder -bool true
