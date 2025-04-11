@@ -16,7 +16,7 @@
 " call plug#end()
 
 " To add plugins to the default list, define a list of additional plugins
-" let g:additional_plugins = ["tpope/vim-fugitive", "preservim/nerdtree"]
+" let g:additional_plugins = ['tpope/vim-fugitive', 'preservim/nerdtree']
 
 " ========== Theme Settings ==========
 " Override the theme (default is catppuccin)

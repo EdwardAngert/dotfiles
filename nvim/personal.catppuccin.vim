@@ -29,11 +29,7 @@ endif
 let g:basic_settings_loaded = 0 " Set to 0 to use settings from both files, 1 to only use these
 
 " Custom plugins (only add plugins not already in init.vim)
-let g:additional_plugins = [
-  \'vim-airline/vim-airline',
-  \'vim-airline/vim-airline-themes',
-  \'scrooloose/nerdtree'
-]
+let g:additional_plugins = ['vim-airline/vim-airline', 'vim-airline/vim-airline-themes', 'scrooloose/nerdtree']
 
 " Configure Catppuccin theme 
 let g:preferred_colorscheme = 'catppuccin'

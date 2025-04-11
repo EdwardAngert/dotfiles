@@ -29,12 +29,7 @@ endif
 let g:basic_settings_loaded = 1 " Set to 1 to only use these settings, 0 to use both
 
 " Custom plugins (only add plugins not already in init.vim)
-let g:additional_plugins = [
-  \'vim-airline/vim-airline',
-  \'vim-airline/vim-airline-themes',
-  \'tanvirtin/monokai.nvim',
-  \'scrooloose/nerdtree'
-]
+let g:additional_plugins = ['vim-airline/vim-airline', 'vim-airline/vim-airline-themes', 'tanvirtin/monokai.nvim', 'scrooloose/nerdtree']
 
 " Set preferred colorscheme to override Catppuccin default
 let g:preferred_colorscheme = 'monokai'
