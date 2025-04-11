@@ -69,14 +69,62 @@ setopt auto_pushd
 setopt pushd_ignore_dups
 setopt pushdminus
 
-# Preferred editor
-if command -v nvim &>/dev/null; then
-  export EDITOR='nvim'
-elif command -v vim &>/dev/null; then
-  export EDITOR='vim'
-else
-  export EDITOR='nano'
+# Setup for editor selection - prioritize ~/.local/bin for custom installs
+# Define constants
+REQUIRED_NVIM_VERSION="0.9.0"
+LOCAL_NVIM="$HOME/.local/bin/nvim"
+IS_SSH_SESSION=false
+
+# Check if we're in an SSH session
+if [[ -n "$SSH_CONNECTION" || -n "$SSH_CLIENT" || -n "$SSH_TTY" ]]; then
+  IS_SSH_SESSION=true
 fi
+
+# Add ~/.local/bin to PATH if not already there - this is where our custom Neovim is installed
+if [ -d "$HOME/.local/bin" ] && [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
+  export PATH="$HOME/.local/bin:$PATH"
+fi
+
+# Find best available editor in order of preference
+set_editor() {
+  # 1. Try custom-installed Neovim first (most reliable)
+  if [ -x "$LOCAL_NVIM" ]; then
+    export EDITOR="$LOCAL_NVIM"
+    alias nvim="$LOCAL_NVIM"
+    return
+  fi
+  
+  # 2. Try system Neovim with version check
+  if command -v nvim &>/dev/null; then
+    local nvim_cmd=$(command -v nvim)
+    local nvim_version=$("$nvim_cmd" --version | head -n1 | cut -d' ' -f2 | sed 's/^v//')
+    
+    # Use system Neovim if version is adequate
+    if [ "$(printf '%s\n' "$REQUIRED_NVIM_VERSION" "$nvim_version" | sort -V | head -n1)" = "$REQUIRED_NVIM_VERSION" ]; then
+      export EDITOR="$nvim_cmd"
+      return
+    fi
+    
+    # For SSH sessions with old Neovim, redirect to Vim
+    if [ "$IS_SSH_SESSION" = true ] && command -v vim &>/dev/null; then
+      export EDITOR="vim"
+      alias nvim="vim"
+      return
+    fi
+  fi
+  
+  # 3. Try Vim
+  if command -v vim &>/dev/null; then
+    export EDITOR="vim"
+    return
+  fi
+  
+  # 4. Last resort: nano
+  export EDITOR="nano"
+}
+
+# Set the editor
+set_editor
 
 # Fix for many programs that use VISUAL if set
 export VISUAL=$EDITOR
@@ -87,16 +135,29 @@ export VISUAL=$EDITOR
 alias zshrc="$EDITOR ~/.zshrc"
 [ -d "$HOME/.oh-my-zsh" ] && alias ohmyzsh="$EDITOR ~/.oh-my-zsh"
 
-# Editor aliases
-if command -v nvim &>/dev/null; then
-  alias v="nvim"
-  alias vi="nvim"
-  alias vim="nvim"
-  # Create a symlink just in case
-  if [ ! -L "$HOME/.local/bin/vi" ] && [ -d "$HOME/.local/bin" ] && [ -x "$(command -v nvim)" ]; then
-    ln -sf "$(command -v nvim)" "$HOME/.local/bin/vi" 2>/dev/null || true
+# Editor aliases - set up shortcuts based on chosen editor
+setup_editor_aliases() {
+  # Set up standard shortcuts
+  alias v="$EDITOR"
+  alias vi="$EDITOR"
+  
+  if [[ "$EDITOR" == *"nvim"* ]]; then
+    # When using Neovim as editor
+    
+    # Only alias vim to nvim in local sessions
+    if [ "$IS_SSH_SESSION" = false ]; then
+      alias vim="$EDITOR"
+    fi
+    
+    # Create a symlink for vi if we're using our local install
+    if [ "$EDITOR" = "$LOCAL_NVIM" ] && [ -d "$HOME/.local/bin" ]; then
+      [ ! -L "$HOME/.local/bin/vi" ] && ln -sf "$LOCAL_NVIM" "$HOME/.local/bin/vi" 2>/dev/null || true
+    fi
   fi
-fi
+}
+
+# Set up the editor aliases
+setup_editor_aliases
 
 # Git aliases - only add what's not already in the git plugin
 if command -v git &>/dev/null; then
@@ -160,24 +221,19 @@ alias json='python3 -m json.tool'
 
 # Support for VS Code Remote and Coder
 if [ -n "$VSCODE_INJECTION" ] || [ -n "$CODER_WORKSPACE_ID" ]; then
-  # Ensure PATH is set correctly for remote development
-  if [ -d "$HOME/.local/bin" ] && [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
-    export PATH="$HOME/.local/bin:$PATH"
-  fi
+  # Ensure common Neovim locations are in PATH
+  for dir in "$HOME/.local/bin" "/usr/local/bin"; do
+    if [ -d "$dir" ] && [[ ":$PATH:" != *":$dir:"* ]]; then
+      export PATH="$dir:$PATH"
+    fi
+  done
   
-  # Check for user-installed Neovim in common locations
-  if [ -f "/usr/local/bin/nvim" ] && [[ ":$PATH:" != *":/usr/local/bin:"* ]]; then
-    export PATH="/usr/local/bin:$PATH"
-  fi
-  
-  # Fix for vi/vim to use nvim - create aliases if not already set
-  if command -v nvim &>/dev/null; then
-    alias vi='nvim'
-    alias vim='nvim'
-  fi
-  
-  # Set SHELL environment variable to zsh explicitly for VS Code terminal
+  # VS Code needs explicit SHELL
   export SHELL=$(which zsh)
+  
+  # Re-run our alias setup to ensure everything is properly set up
+  # in the VS Code environment
+  setup_editor_aliases
 fi
 
 # NVM setup (if installed)
