@@ -1,4 +1,5 @@
 {
+  // Editor settings
   "editor.fontFamily": "JetBrains Mono, Menlo, Monaco, 'Courier New', monospace",
   "editor.tabSize": 2,
   "editor.insertSpaces": true,
@@ -6,22 +7,35 @@
   "editor.renderWhitespace": "selection",
   "editor.rulers": [80, 120],
   "editor.minimap.enabled": false,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
 
+  // Appearance
   "workbench.colorTheme": "Catppuccin Mocha",
+  
+  // Terminal settings
   "terminal.integrated.fontSize": 12,
   "terminal.integrated.defaultProfile.osx": "zsh",
   "terminal.integrated.defaultProfile.linux": "zsh",
 
+  // File handling
   "files.trimTrailingWhitespace": true,
   "files.insertFinalNewline": true,
   "files.autoSave": "onFocusChange",
 
+  // Privacy
   "telemetry.telemetryLevel": "off",
 
+  // Remote development
   "remote.SSH.connectTimeout": 1800,
   "remote.SSH.remotePlatform": {
-    "coder-vscode.dev.coder.com--edward--coder-claude": "linux"
+    "coder-vscode.dev.coder.com--edward--coder-claude": "linux",
+    "coder-vscode.dev.coder.com--edward--coder-claude.dev": "linux"
   },
+
+  // UI preferences
+  "chat.commandCenter.enabled": false,
 
   // Code Spell Checker settings
   "cSpell.enabled": true,
@@ -44,8 +58,7 @@
     ".git",
     "*.lock"
   ],
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true
-  },
-  "chat.commandCenter.enabled": false
+  
+  // Markdown Table Formatter settings
+  "markdown-table-formatter.limitLastColumnLength": "Follow header row length"
 }

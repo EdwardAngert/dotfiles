@@ -426,13 +426,17 @@ else
     print_success "zsh is already installed"
   fi
 
-  # Install Neovim
-  NVIM_VERSION="0.9.5"  # Specify minimum required version
+  # Install/Update Neovim
+  NVIM_VERSION="0.9.0"  # Specify minimum required version
   
   # Function to check if current Neovim version is sufficient
   check_nvim_version() {
-    local current_version=$(nvim --version | head -n1 | cut -d' ' -f2 | cut -c 2-)
-    if [ $(printf "%s\n%s" "$current_version" "$NVIM_VERSION" | sort -V | head -n1) = "$NVIM_VERSION" ]; then
+    if ! command -v nvim &> /dev/null; then
+      return 1
+    fi
+    
+    local current_version=$(nvim --version | head -n1 | cut -d' ' -f2 | sed 's/^v//')
+    if [ "$(printf "%s\n%s" "$current_version" "$NVIM_VERSION" | sort -V | head -n1)" = "$NVIM_VERSION" ]; then
       # Current version is greater than or equal to required
       return 0
     else
@@ -440,91 +444,70 @@ else
     fi
   }
   
-  if ! check_command nvim || ! check_nvim_version; then
+  # If we have our upgrade script, use that for consistency across all modes
+  if [ -f "$DOTFILES_DIR/nvim/upgrade-nvim.sh" ]; then
+    print_info "Checking Neovim version requirements..."
+    if [ "$UPDATE_MODE" = true ]; then
+      # In update mode, run non-interactively
+      "$DOTFILES_DIR/nvim/upgrade-nvim.sh" --non-interactive
+    else
+      # In fresh install mode, check if we need to install/update
+      if ! check_command nvim || ! check_nvim_version; then
+        "$DOTFILES_DIR/nvim/upgrade-nvim.sh" --non-interactive
+      fi
+    fi
+  # Fall back to the built-in method if the script doesn't exist
+  elif ! check_command nvim || ! check_nvim_version; then
     print_info "Installing/Updating Neovim to v$NVIM_VERSION or newer..."
     
     if [ "$OS" = "macOS" ]; then
       brew install neovim
     elif [ "$OS" = "Linux" ]; then
-      # Always use the AppImage method for consistent version across all Linux distros
-      print_info "Installing latest Neovim using AppImage..."
-      
-      # Create directory for the AppImage
+      # Create directory for Neovim
       NVIM_DIR="$HOME/.local/bin"
       mkdir -p "$NVIM_DIR"
+      mkdir -p "$HOME/.local/share/nvim"
       
       print_info "Downloading Neovim binary package..."
-      if curl -L https://github.com/neovim/neovim/releases/download/v0.9.5/nvim-linux64.tar.gz -o "/tmp/nvim-linux64.tar.gz"; then
+      if curl -L "https://github.com/neovim/neovim/releases/download/v0.9.5/nvim-linux64.tar.gz" -o "/tmp/nvim-linux64.tar.gz"; then
         print_info "Extracting Neovim..."
-        mkdir -p "/tmp/nvim-extract"
-        tar xzf "/tmp/nvim-linux64.tar.gz" -C "/tmp/nvim-extract"
+        tar xzf "/tmp/nvim-linux64.tar.gz" -C "/tmp"
         
-        # Copy the extracted files to the bin directory
-        cp -r "/tmp/nvim-extract/nvim-linux64/bin/"* "$NVIM_DIR/"
-        mkdir -p "$HOME/.local/share"
-        cp -r "/tmp/nvim-extract/nvim-linux64/share/nvim" "$HOME/.local/share/"
-        
-        # Cleanup
-        rm -rf "/tmp/nvim-extract" "/tmp/nvim-linux64.tar.gz"
-        
-        # Make executable
-        chmod +x "$NVIM_DIR/nvim"
-        
-        # Add to PATH if not already there
-        if [[ ":$PATH:" != *":$NVIM_DIR:"* ]]; then
-          echo "export PATH=\"\$PATH:$NVIM_DIR\"" >> "$HOME/.bashrc"
-          echo "export PATH=\"\$PATH:$NVIM_DIR\"" >> "$HOME/.profile"
-          if [ -f "$HOME/.zshrc" ]; then
-            echo "export PATH=\"\$PATH:$NVIM_DIR\"" >> "$HOME/.zshrc"
+        # Check if extraction was successful
+        if [ -d "/tmp/nvim-linux64" ]; then
+          # Copy the extracted files
+          cp -f "/tmp/nvim-linux64/bin/nvim" "$NVIM_DIR/"
+          cp -rf "/tmp/nvim-linux64/share/nvim/"* "$HOME/.local/share/nvim/"
+          
+          # Cleanup
+          rm -rf "/tmp/nvim-linux64" "/tmp/nvim-linux64.tar.gz"
+          
+          # Make executable
+          chmod +x "$NVIM_DIR/nvim"
+          
+          # Add to PATH if not already there
+          if [[ ":$PATH:" != *":$NVIM_DIR:"* ]]; then
+            if [ -f "$HOME/.zshrc.local" ]; then
+              echo "export PATH=\"\$HOME/.local/bin:\$PATH\"" >> "$HOME/.zshrc.local"
+            else
+              echo "export PATH=\"\$HOME/.local/bin:\$PATH\"" >> "$HOME/.zshrc"
+            fi
+            export PATH="$HOME/.local/bin:$PATH"
           fi
-          export PATH="$PATH:$NVIM_DIR"
+          
+          print_success "Neovim installed to $NVIM_DIR/nvim"
+        else
+          print_error "Failed to extract Neovim. Archive may be corrupted."
+          # Continue with fallback methods
         fi
-        
-        print_success "Neovim AppImage installed to $NVIM_DIR/nvim"
-        print_info "The PATH has been updated to include $NVIM_DIR"
       else
-        print_error "Failed to download Neovim AppImage."
+        print_error "Failed to download Neovim."
         
         # Fallback to package manager as last resort
         print_info "Falling back to package manager installation..."
         if check_command apt-get; then
-          # For Debian-based systems, use direct binary installation
-          print_info "Attempting direct installation of Neovim binary..."
-          
-          # Install dependencies
           sudo apt-get update -y
-          sudo apt-get install -y curl wget unzip
-          
-          # Create a temporary directory
-          TEMP_DIR=$(mktemp -d)
-          cd "$TEMP_DIR"
-          
-          # Download the prebuilt Neovim package
-          wget https://github.com/neovim/neovim/releases/download/stable/nvim-linux64.tar.gz
-          
-          # Extract the archive
-          tar xzf nvim-linux64.tar.gz
-          
-          # Install to /usr/local
-          sudo cp -r nvim-linux64/* /usr/local/
-          
-          # Clean up
-          cd - > /dev/null
-          rm -rf "$TEMP_DIR"
-          
-          # Verify installation
-          if command -v /usr/local/bin/nvim &> /dev/null; then
-            # Create symlink
-            sudo ln -sf /usr/local/bin/nvim /usr/bin/nvim
-            print_success "Neovim installed to /usr/local/bin/nvim"
-          else
-            # If direct install fails, try package manager
-            print_info "Direct installation failed, trying package repositories..."
-            sudo apt-get install -y software-properties-common
-            sudo add-apt-repository -y ppa:neovim-ppa/unstable  # Use unstable for newer versions
-            sudo apt-get update -y
-            sudo apt-get install -y neovim
-          fi
+          sudo apt-get install -y neovim
         elif check_command dnf; then
           sudo dnf install -y neovim
         elif check_command pacman; then
@@ -546,7 +529,7 @@ else
     fi
   else
     nvim_installed_version=$(nvim --version | head -n1)
-    print_success "Neovim v$nvim_installed_version is already installed and meets version requirements"
+    print_success "Neovim $nvim_installed_version is already installed and meets version requirements"
   fi
 
   # Install vim-plug for Neovim
@@ -691,6 +674,10 @@ if [ "$SKIP_VSCODE" = false ] && check_command code; then
   # Code Spell Checker
   code --install-extension streetsidesoftware.code-spell-checker 2>/dev/null || true
   print_success "VSCode Code Spell Checker installed!"
+  
+  # Markdown Table Formatter
+  code --install-extension fcrespo82.markdown-table-formatter 2>/dev/null || true
+  print_success "VSCode Markdown Table Formatter installed!"
   
   if [ "$OS" = "macOS" ] && [ -d "$HOME/Library/Application Support/Code/User" ]; then
     vscode_config_dir="$HOME/Library/Application Support/Code/User"
@@ -1187,6 +1174,12 @@ if check_command code; then
   else
     INSTALLATION_SUMMARY="${INSTALLATION_SUMMARY}\n✗ VSCode Code Spell Checker installation failed"
   fi
+  
+  if code --list-extensions 2>/dev/null | grep -q "fcrespo82.markdown-table-formatter"; then
+    INSTALLATION_SUMMARY="${INSTALLATION_SUMMARY}\n✓ VSCode Markdown Table Formatter is installed"
+  else
+    INSTALLATION_SUMMARY="${INSTALLATION_SUMMARY}\n✗ VSCode Markdown Table Formatter installation failed"
+  fi
 fi
 
 # Add Git configuration status
@@ -1194,6 +1187,27 @@ if [ -f "$HOME/.gitconfig.local" ]; then
   INSTALLATION_SUMMARY="${INSTALLATION_SUMMARY}\n✓ Git local configuration is in place"
 else
   INSTALLATION_SUMMARY="${INSTALLATION_SUMMARY}\n✗ Git local configuration is missing"
+fi
+
+# Add GitHub CLI status
+if command -v gh &>/dev/null; then
+  if gh auth status &>/dev/null; then
+    INSTALLATION_SUMMARY="${INSTALLATION_SUMMARY}\n✓ GitHub CLI is installed and authenticated"
+  else
+    INSTALLATION_SUMMARY="${INSTALLATION_SUMMARY}\n✓ GitHub CLI is installed but not authenticated"
+  fi
+else
+  INSTALLATION_SUMMARY="${INSTALLATION_SUMMARY}\n✗ GitHub CLI is not installed"
+fi
+
+# Install GitHub CLI if script exists
+if [ -f "$DOTFILES_DIR/github/install-github-cli.sh" ]; then
+  print_info "Setting up GitHub CLI..."
+  if [ "$UPDATE_MODE" = true ]; then
+    "$DOTFILES_DIR/github/install-github-cli.sh" --update --non-interactive
+  else
+    "$DOTFILES_DIR/github/install-github-cli.sh" --non-interactive
+  fi
 fi
 
 # Display status and next steps

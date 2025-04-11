@@ -25,6 +25,7 @@ Personal configuration files for VSCode, Neovim, and Zsh. These dotfiles are des
 - 🔁 **Update system** for keeping dotfiles current with `--update` and `--pull` options
 - ⏱️ **Automated updates** via cron job to keep everything up-to-date
 - 🛠️ **Fallback configurations** for environments with restricted dependencies
+- 🐙 **GitHub CLI** installation and configuration for streamlined Git workflows
 
 ## Installation
 
@@ -102,6 +103,7 @@ The installation script automatically installs:
 - **vim-plug** - Plugin manager for Neovim
 - **JetBrains Mono** - Programming font with ligatures
 - **VSCode Extensions** - Catppuccin theme for consistent styling
+- **GitHub CLI** - Command-line tool for GitHub workflows
 - **Terminal Configurations**:
   - iTerm2 Configuration (macOS)
   - GNOME Terminal, Konsole and Alacritty (Linux)
