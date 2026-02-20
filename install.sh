@@ -344,7 +344,7 @@ else
           mkdir -p "$NVM_DIR"
           # Download to a temp file first for security
           TEMP_NVM_SCRIPT=$(mktemp)
-          if curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh -o "$TEMP_NVM_SCRIPT" 2>/dev/null; then
+          if curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh -o "$TEMP_NVM_SCRIPT" 2>/dev/null; then
             bash "$TEMP_NVM_SCRIPT" >/dev/null 2>&1
             rm -f "$TEMP_NVM_SCRIPT"
           fi
@@ -462,51 +462,70 @@ else
   # Fall back to the built-in method if the script doesn't exist
   elif ! check_command nvim || ! check_nvim_version; then
     print_info "Installing/Updating Neovim to v$NVIM_VERSION or newer..."
-    
+
     if [ "$OS" = "macOS" ]; then
       brew install neovim
     elif [ "$OS" = "Linux" ]; then
-      # Create directory for Neovim
-      NVIM_DIR="$HOME/.local/bin"
-      mkdir -p "$NVIM_DIR"
-      mkdir -p "$HOME/.local/share/nvim"
-      
-      print_info "Downloading Neovim binary package..."
-      if curl -L "https://github.com/neovim/neovim/releases/download/v0.9.5/nvim-linux64.tar.gz" -o "/tmp/nvim-linux64.tar.gz"; then
-        print_info "Extracting Neovim..."
-        tar xzf "/tmp/nvim-linux64.tar.gz" -C "/tmp"
-        
-        # Check if extraction was successful
-        if [ -d "/tmp/nvim-linux64" ]; then
-          # Copy the extracted files
-          cp -f "/tmp/nvim-linux64/bin/nvim" "$NVIM_DIR/"
-          cp -rf "/tmp/nvim-linux64/share/nvim/"* "$HOME/.local/share/nvim/"
-          
-          # Cleanup
-          rm -rf "/tmp/nvim-linux64" "/tmp/nvim-linux64.tar.gz"
-          
-          # Make executable
-          chmod +x "$NVIM_DIR/nvim"
-          
-          # Add to PATH if not already there
-          if [[ ":$PATH:" != *":$NVIM_DIR:"* ]]; then
-            if [ -f "$HOME/.zshrc.local" ]; then
-              echo "export PATH=\"\$HOME/.local/bin:\$PATH\"" >> "$HOME/.zshrc.local"
-            else
-              echo "export PATH=\"\$HOME/.local/bin:\$PATH\"" >> "$HOME/.zshrc"
+      # Detect architecture (Neovim uses linux-x86_64/linux-arm64 naming)
+      ARCH=$(uname -m)
+      NVIM_ARCH=""
+      case "$ARCH" in
+        x86_64|amd64)
+          NVIM_ARCH="linux-x86_64"
+          ;;
+        aarch64|arm64)
+          NVIM_ARCH="linux-arm64"
+          ;;
+        *)
+          print_warning "Architecture $ARCH may not have prebuilt Neovim binaries"
+          NVIM_ARCH=""
+          ;;
+      esac
+
+      NVIM_INSTALLED=false
+
+      # Try binary download if architecture is supported
+      if [ -n "$NVIM_ARCH" ]; then
+        NVIM_DIR="$HOME/.local/bin"
+        mkdir -p "$NVIM_DIR"
+        mkdir -p "$HOME/.local/share/nvim"
+
+        print_info "Downloading Neovim binary package for $NVIM_ARCH..."
+        if curl -L "https://github.com/neovim/neovim/releases/download/stable/nvim-${NVIM_ARCH}.tar.gz" -o "/tmp/nvim-${NVIM_ARCH}.tar.gz"; then
+          print_info "Extracting Neovim..."
+          tar xzf "/tmp/nvim-${NVIM_ARCH}.tar.gz" -C "/tmp"
+
+          # Find extracted directory (naming may vary)
+          EXTRACT_DIR=$(find /tmp -maxdepth 1 -type d -name "nvim-*" | head -1)
+
+          if [ -n "$EXTRACT_DIR" ] && [ -d "$EXTRACT_DIR" ]; then
+            cp -f "$EXTRACT_DIR/bin/nvim" "$NVIM_DIR/"
+            cp -rf "$EXTRACT_DIR/share/nvim/"* "$HOME/.local/share/nvim/"
+            rm -rf "$EXTRACT_DIR" "/tmp/nvim-${NVIM_ARCH}.tar.gz"
+            chmod +x "$NVIM_DIR/nvim"
+
+            if [[ ":$PATH:" != *":$NVIM_DIR:"* ]]; then
+              if [ -f "$HOME/.zshrc.local" ]; then
+                echo "export PATH=\"\$HOME/.local/bin:\$PATH\"" >> "$HOME/.zshrc.local"
+              else
+                echo "export PATH=\"\$HOME/.local/bin:\$PATH\"" >> "$HOME/.zshrc"
+              fi
+              export PATH="$HOME/.local/bin:$PATH"
             fi
-            export PATH="$HOME/.local/bin:$PATH"
+
+            print_success "Neovim installed to $NVIM_DIR/nvim"
+            NVIM_INSTALLED=true
+          else
+            print_error "Failed to extract Neovim. Archive may be corrupted."
+            rm -f "/tmp/nvim-${NVIM_ARCH}.tar.gz"
           fi
-          
-          print_success "Neovim installed to $NVIM_DIR/nvim"
         else
-          print_error "Failed to extract Neovim. Archive may be corrupted."
-          # Continue with fallback methods
+          print_error "Failed to download Neovim binary."
         fi
-      else
-        print_error "Failed to download Neovim."
-        
-        # Fallback to package manager as last resort
+      fi
+
+      # Fallback to package manager if binary install failed
+      if [ "$NVIM_INSTALLED" = false ]; then
         print_info "Falling back to package manager installation..."
         if check_command apt-get; then
           sudo apt-get update -y

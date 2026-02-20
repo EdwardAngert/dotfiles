@@ -21,6 +21,24 @@ if ! command -v curl &>/dev/null; then
   exit 1
 fi
 
+# Detect architecture (Neovim uses linux-x86_64/linux-arm64 naming)
+ARCH=$(uname -m)
+case "$ARCH" in
+  x86_64|amd64)
+    NVIM_ARCH="linux-x86_64"
+    ;;
+  aarch64|arm64)
+    NVIM_ARCH="linux-arm64"
+    ;;
+  *)
+    echo -e "${RED}Unsupported architecture: $ARCH${NC}"
+    echo -e "${YELLOW}Please install Neovim via your package manager instead.${NC}"
+    exit 1
+    ;;
+esac
+
+echo -e "${BLUE}Detected architecture:${NC} $ARCH -> $NVIM_ARCH"
+
 # Create directories for installation
 mkdir -p "$HOME/.local/bin"
 mkdir -p "$HOME/.local/share"
@@ -31,39 +49,38 @@ trap 'rm -rf "$TEMP_DIR"' EXIT
 echo -e "${BLUE}Working in temporary directory:${NC} $TEMP_DIR"
 cd "$TEMP_DIR" || exit 1
 
-# Try to download latest stable Neovim
-echo -e "${BLUE}Downloading latest stable Neovim...${NC}"
-curl -L -o nvim-linux64.tar.gz https://github.com/neovim/neovim/releases/download/stable/nvim-linux64.tar.gz
+ARCHIVE_NAME="nvim-${NVIM_ARCH}.tar.gz"
 
-# Check if download was successful
-if [ ! -f nvim-linux64.tar.gz ] || [ ! -s nvim-linux64.tar.gz ]; then
-  echo -e "${YELLOW}Download failed. Trying v0.9.5 specifically...${NC}"
-  curl -L -o nvim-linux64.tar.gz https://github.com/neovim/neovim/releases/download/v0.9.5/nvim-linux64.tar.gz
-fi
+# Try to download latest stable Neovim
+echo -e "${BLUE}Downloading latest stable Neovim for ${NVIM_ARCH}...${NC}"
+curl -L -o "$ARCHIVE_NAME" "https://github.com/neovim/neovim/releases/download/stable/nvim-${NVIM_ARCH}.tar.gz"
 
 # Verify the file was downloaded and has content
-if [ ! -f nvim-linux64.tar.gz ] || [ ! -s nvim-linux64.tar.gz ]; then
+if [ ! -f "$ARCHIVE_NAME" ] || [ ! -s "$ARCHIVE_NAME" ]; then
   echo -e "${RED}Failed to download Neovim. Check your internet connection.${NC}"
-  cd - > /dev/null
-  rm -rf "$TEMP_DIR"
+  echo -e "${YELLOW}You can try installing via package manager: sudo apt install neovim${NC}"
   exit 1
 fi
 
 # Show file info
 echo -e "${BLUE}Downloaded file info:${NC}"
-file nvim-linux64.tar.gz
+file "$ARCHIVE_NAME"
 echo ""
 
 # Extract the archive
 echo -e "${BLUE}Extracting Neovim...${NC}"
-tar xzf nvim-linux64.tar.gz
+tar xzf "$ARCHIVE_NAME"
+
+# Find extracted directory (naming varies by version/arch)
+EXTRACT_DIR=$(find . -maxdepth 1 -type d -name "nvim-*" | head -1)
 
 # Check extraction success
-if [ $? -ne 0 ]; then
+if [ -z "$EXTRACT_DIR" ] || [ ! -d "$EXTRACT_DIR" ]; then
   echo -e "${RED}Extraction failed. Archive may be corrupted.${NC}"
   echo "Trying alternative extraction method..."
-  mkdir -p nvim-linux64
-  tar xf nvim-linux64.tar.gz -C nvim-linux64 --strip-components=1
+  mkdir -p nvim-extract
+  tar xf "$ARCHIVE_NAME" -C nvim-extract --strip-components=1
+  EXTRACT_DIR="nvim-extract"
 fi
 
 # List extracted contents
@@ -72,15 +89,15 @@ ls -la
 echo ""
 
 # Continue only if extraction succeeded
-if [ -d "nvim-linux64" ]; then
+if [ -d "$EXTRACT_DIR" ]; then
   echo -e "${BLUE}Installing Neovim to ${GREEN}$HOME/.local/bin${NC}"
-  
+
   # Copy the executable
-  cp -f "$TEMP_DIR/nvim-linux64/bin/nvim" "$HOME/.local/bin/"
-  
+  cp -f "$EXTRACT_DIR/bin/nvim" "$HOME/.local/bin/"
+
   # Copy the runtime files
   echo -e "${BLUE}Copying runtime files...${NC}"
-  cp -rf "$TEMP_DIR/nvim-linux64/share/nvim" "$HOME/.local/share/"
+  cp -rf "$EXTRACT_DIR/share/nvim" "$HOME/.local/share/"
   
   # Make sure it's executable
   chmod +x "$HOME/.local/bin/nvim"

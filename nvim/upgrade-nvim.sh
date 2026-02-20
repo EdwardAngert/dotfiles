@@ -4,9 +4,29 @@
 
 set -eo pipefail  # Exit on error, fail on pipe failures
 
-# Required minimum Neovim version and target installation version
+# Required minimum Neovim version
 readonly REQUIRED_VERSION="0.9.0"
-readonly INSTALL_VERSION="v0.9.5"
+
+# Detect architecture and return archive name
+# Note: Neovim naming changed - newer releases use linux-x86_64/linux-arm64
+detect_arch() {
+  local arch=$(uname -m)
+  case "$arch" in
+    x86_64|amd64)
+      echo "linux-x86_64"
+      ;;
+    aarch64|arm64)
+      echo "linux-arm64"
+      ;;
+    armv7l|armhf)
+      # Neovim doesn't provide 32-bit ARM builds, need to use package manager
+      echo "arm32-unsupported"
+      ;;
+    *)
+      echo "unknown"
+      ;;
+  esac
+}
 
 # Colors for output
 readonly RED='\033[0;31m'
@@ -47,28 +67,47 @@ check_nvim_version() {
 # Function to download Neovim with fallback mechanisms
 download_neovim() {
   local temp_dir=$1
-  local download_url="https://github.com/neovim/neovim/releases/download/$INSTALL_VERSION/nvim-linux64.tar.gz"
-  local output_file="$temp_dir/nvim-linux64.tar.gz"
+  local arch=$(detect_arch)
   local dl_success=false
 
-  echo -e "${BLUE}Downloading Neovim $INSTALL_VERSION...${NC}"
-  
+  # Handle unsupported architectures
+  if [ "$arch" = "arm32-unsupported" ]; then
+    echo -e "${YELLOW}32-bit ARM is not supported by Neovim prebuilt binaries.${NC}"
+    echo -e "${YELLOW}Please install Neovim via your package manager: sudo apt install neovim${NC}"
+    return 1
+  fi
+
+  if [ "$arch" = "unknown" ]; then
+    echo -e "${RED}Unknown architecture: $(uname -m)${NC}"
+    return 1
+  fi
+
+  local archive_name="nvim-${arch}"
+  local output_file="$temp_dir/${archive_name}.tar.gz"
+
+  # Try stable release first (has ARM64 builds)
+  local download_url="https://github.com/neovim/neovim/releases/download/stable/${archive_name}.tar.gz"
+
+  echo -e "${BLUE}Downloading Neovim stable for ${arch}...${NC}"
+
   # Try wget first if available (more reliable for large files)
   if command -v wget &>/dev/null; then
     wget -q --show-progress "$download_url" -O "$output_file" && dl_success=true
   fi
-  
+
   # If wget failed or isn't available, try curl
   if [ "$dl_success" = false ] && command -v curl &>/dev/null; then
     curl -L --progress-bar -o "$output_file" "$download_url" && dl_success=true
   fi
-  
+
   # Check if download succeeded
   if [ "$dl_success" = false ] || [ ! -s "$output_file" ]; then
     echo -e "${RED}Failed to download Neovim. Check your internet connection.${NC}"
     return 1
   fi
-  
+
+  # Store the archive name for extraction
+  echo "$archive_name" > "$temp_dir/.archive_name"
   return 0
 }
 
@@ -77,26 +116,35 @@ install_latest_neovim() {
   # Create a clean temporary directory for downloads
   local TEMP_DIR=$(mktemp -d)
   trap 'rm -rf "$TEMP_DIR"' EXIT
-  
+
   # Download Neovim
   if ! download_neovim "$TEMP_DIR"; then
     return 1
   fi
-  
+
+  # Get the archive name from download function
+  local archive_name=$(cat "$TEMP_DIR/.archive_name" 2>/dev/null || echo "nvim-linux64")
+
   # Extract
   echo -e "${BLUE}Extracting Neovim...${NC}"
-  tar -xzf "$TEMP_DIR/nvim-linux64.tar.gz" -C "$TEMP_DIR"
-  
-  # Check if extraction was successful
-  if [ ! -d "$TEMP_DIR/nvim-linux64" ]; then
+  tar -xzf "$TEMP_DIR/${archive_name}.tar.gz" -C "$TEMP_DIR"
+
+  # Check if extraction was successful (handle both naming conventions)
+  local extract_dir="$TEMP_DIR/${archive_name}"
+  if [ ! -d "$extract_dir" ]; then
+    # Try alternative naming (some versions use nvim-linux64 even for arm64)
+    extract_dir=$(find "$TEMP_DIR" -maxdepth 1 -type d -name "nvim-*" | head -1)
+  fi
+
+  if [ -z "$extract_dir" ] || [ ! -d "$extract_dir" ]; then
     echo -e "${RED}Failed to extract Neovim. Archive may be corrupted.${NC}"
     return 1
   fi
-  
+
   # Install
   echo -e "${BLUE}Installing Neovim...${NC}"
-  cp -f "$TEMP_DIR/nvim-linux64/bin/nvim" "$USER_BIN_DIR/"
-  cp -rf "$TEMP_DIR/nvim-linux64/share/nvim/"* "$USER_SHARE_DIR/"
+  cp -f "$extract_dir/bin/nvim" "$USER_BIN_DIR/"
+  cp -rf "$extract_dir/share/nvim/"* "$USER_SHARE_DIR/"
   
   # Make executable
   chmod +x "$USER_BIN_DIR/nvim"

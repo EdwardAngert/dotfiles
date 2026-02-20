@@ -64,8 +64,8 @@ TEMP_DIR=$(mktemp -d)
 trap 'rm -rf "$TEMP_DIR"' EXIT
 
 FONT_DIR="$TEMP_DIR/fonts"
-JETBRAINS_VERSION="2.304"
-JETBRAINS_URL="https://github.com/JetBrains/JetBrainsMono/releases/download/v${JETBRAINS_VERSION}/JetBrainsMono-${JETBRAINS_VERSION}.zip"
+# Use latest release - GitHub redirects /latest to current version
+JETBRAINS_URL="https://github.com/JetBrains/JetBrainsMono/releases/latest/download/JetBrainsMono.zip"
 
 # Detect operating system and set font directory
 # Always install fonts regardless of OS detection
