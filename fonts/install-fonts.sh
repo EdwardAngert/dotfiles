@@ -64,8 +64,18 @@ TEMP_DIR=$(mktemp -d)
 trap 'rm -rf "$TEMP_DIR"' EXIT
 
 FONT_DIR="$TEMP_DIR/fonts"
-# Use latest release - GitHub redirects /latest to current version
-JETBRAINS_URL="https://github.com/JetBrains/JetBrainsMono/releases/latest/download/JetBrainsMono.zip"
+
+# Get latest JetBrains Mono version from GitHub API
+print_info "Fetching latest JetBrains Mono version..."
+JETBRAINS_VERSION=$(curl -s "https://api.github.com/repos/JetBrains/JetBrainsMono/releases/latest" | grep -o '"tag_name": "[^"]*"' | cut -d'"' -f4 | sed 's/^v//')
+
+if [ -z "$JETBRAINS_VERSION" ]; then
+  print_warning "Could not fetch latest version, using fallback v2.304"
+  JETBRAINS_VERSION="2.304"
+fi
+
+JETBRAINS_URL="https://github.com/JetBrains/JetBrainsMono/releases/download/v${JETBRAINS_VERSION}/JetBrainsMono-${JETBRAINS_VERSION}.zip"
+print_info "Using JetBrains Mono v${JETBRAINS_VERSION}"
 
 # Detect operating system and set font directory
 # Always install fonts regardless of OS detection
