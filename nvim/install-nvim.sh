@@ -1,26 +1,35 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Script to install the latest stable Neovim release
 # Created for upgrading Neovim in remote environments
 
+set -eo pipefail
+
 # Colors for better readability
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+readonly RED='\033[0;31m'
+readonly GREEN='\033[0;32m'
+readonly YELLOW='\033[0;33m'
+readonly BLUE='\033[0;34m'
+readonly NC='\033[0m' # No Color
 
 echo -e "${BLUE}Neovim Installer${NC}"
 echo "This script will install the latest stable Neovim to your home directory."
+
+# Check for required dependencies
+if ! command -v curl &>/dev/null; then
+  echo -e "${RED}Error: curl is required but not installed.${NC}"
+  exit 1
+fi
 
 # Create directories for installation
 mkdir -p "$HOME/.local/bin"
 mkdir -p "$HOME/.local/share"
 
-# Set up temporary directory
+# Set up temporary directory with cleanup trap
 TEMP_DIR=$(mktemp -d)
+trap 'rm -rf "$TEMP_DIR"' EXIT
 echo -e "${BLUE}Working in temporary directory:${NC} $TEMP_DIR"
-cd "$TEMP_DIR"
+cd "$TEMP_DIR" || exit 1
 
 # Try to download latest stable Neovim
 echo -e "${BLUE}Downloading latest stable Neovim...${NC}"
@@ -79,8 +88,25 @@ if [ -d "nvim-linux64" ]; then
   # Add to PATH if not already there
   if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
     export PATH="$HOME/.local/bin:$PATH"
-    echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.zshrc.local"
-    echo -e "${GREEN}Added $HOME/.local/bin to your PATH in .zshrc.local${NC}"
+
+    # Add to shell config - prefer .zshrc.local if it exists, otherwise .zshrc or .bashrc
+    local PATH_EXPORT='export PATH="$HOME/.local/bin:$PATH"'
+    if [ -f "$HOME/.zshrc.local" ]; then
+      if ! grep -q '.local/bin' "$HOME/.zshrc.local" 2>/dev/null; then
+        echo "$PATH_EXPORT" >> "$HOME/.zshrc.local"
+        echo -e "${GREEN}Added $HOME/.local/bin to your PATH in .zshrc.local${NC}"
+      fi
+    elif [ -f "$HOME/.zshrc" ]; then
+      if ! grep -q '.local/bin' "$HOME/.zshrc" 2>/dev/null; then
+        echo "$PATH_EXPORT" >> "$HOME/.zshrc"
+        echo -e "${GREEN}Added $HOME/.local/bin to your PATH in .zshrc${NC}"
+      fi
+    elif [ -f "$HOME/.bashrc" ]; then
+      if ! grep -q '.local/bin' "$HOME/.bashrc" 2>/dev/null; then
+        echo "$PATH_EXPORT" >> "$HOME/.bashrc"
+        echo -e "${GREEN}Added $HOME/.local/bin to your PATH in .bashrc${NC}"
+      fi
+    fi
   fi
   
   # Verify the installation
@@ -98,10 +124,6 @@ else
   exit 1
 fi
 
-# Clean up
-echo -e "${BLUE}Cleaning up...${NC}"
-cd - > /dev/null
-rm -rf "$TEMP_DIR"
-
+# Cleanup is handled by trap
 echo -e "${GREEN}Neovim installation complete!${NC}"
 echo "Try running: ~/.local/bin/nvim --version"

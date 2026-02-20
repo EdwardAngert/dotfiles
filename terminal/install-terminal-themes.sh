@@ -1,11 +1,14 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+# Script to install terminal themes (Catppuccin Mocha)
+set -eo pipefail
 
 # Colors
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+readonly RED='\033[0;31m'
+readonly GREEN='\033[0;32m'
+readonly YELLOW='\033[0;33m'
+readonly BLUE='\033[0;34m'
+readonly NC='\033[0m' # No Color
 
 # Helper functions
 print_info() {

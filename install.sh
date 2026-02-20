@@ -2,7 +2,7 @@
 
 # Enable strict mode
 set -euo pipefail
-IFS=$'\n\t'$'\n\t'
+IFS=$'\n\t'
 
 # Start timing the script execution
 START_TIME=$(date +%s)
@@ -38,6 +38,9 @@ SKIP_ZSH=false
 SKIP_VSCODE=false
 SKIP_TERMINAL=false
 UPDATE_MODE=false
+
+# Initialize variables that may be used before being set
+NODE_INSTALL_SUCCESS=false
 
 # Process command line arguments
 while [[ "$#" -gt 0 ]]; do
@@ -368,7 +371,7 @@ else
     print_success "Node.js is already installed"
     NODE_INSTALL_SUCCESS=true
   fi
-  
+
   # Install build tools (for telescope-fzf-native and other plugins)
   if ! check_command make || ! check_command gcc; then
     print_info "Installing build tools (required for some Neovim plugins)..."
@@ -786,40 +789,25 @@ if [ "$SKIP_NEOVIM" = false ]; then
         rm -f "$NVIM_LUA_TEST"
       fi
       
-      # Determine which template to use
+      # Determine which template to use - always prefer Catppuccin when possible
       TEMPLATE_CHOICE=""
-      if [ "$UPDATE_MODE" = true ] && [ -n "$TEMPLATES_AVAILABLE" ]; then
-        # In update mode, choose template based on capabilities
+      if [ -n "$TEMPLATES_AVAILABLE" ]; then
+        # Choose template based on system capabilities - prefer Catppuccin
         if [ "$HAS_LUA" = false ] && [ -f "$DOTFILES_DIR/nvim/personal.nolua.vim" ]; then
+          # No Lua support - use nolua config
           TEMPLATE_CHOICE="nolua"
-        elif [ ! -f "$HOME/.config/nvim/.no-coc" ] && [ -f "$DOTFILES_DIR/nvim/personal.vim.template" ]; then
-          TEMPLATE_CHOICE="default"
+          print_info "Using no-Lua configuration (Neovim lacks Lua support)"
+        elif [ -f "$HOME/.config/nvim/.no-coc" ] && [ -f "$DOTFILES_DIR/nvim/personal.nococ.vim" ]; then
+          # No Node.js - use nococ config
+          TEMPLATE_CHOICE="nococ"
+          print_info "Using no-CoC configuration (Node.js not available)"
         elif [ -f "$DOTFILES_DIR/nvim/personal.catppuccin.vim" ]; then
+          # Full capabilities - use Catppuccin
           TEMPLATE_CHOICE="catppuccin"
-        fi
-      elif [ -n "$TEMPLATES_AVAILABLE" ]; then
-        # In interactive mode, ask user for preference if stdout is a tty
-        if [ -t 1 ]; then
-          # Filter available templates based on system capabilities
-          if [ "$HAS_LUA" = false ]; then
-            echo -e "\nDetected Neovim without Lua support."
-            echo -e "Available Neovim templates: nolua nococ default"
-            echo -e "Which template would you like to use? (nolua/nococ/default) [nolua]: "
-            read -r TEMPLATE_CHOICE
-            TEMPLATE_CHOICE=${TEMPLATE_CHOICE:-nolua}
-          else
-            echo -e "\nAvailable Neovim templates: ${TEMPLATES_AVAILABLE}"
-            echo -e "Which template would you like to use? (default/catppuccin/monokai/nococ/nolua) [default]: "
-            read -r TEMPLATE_CHOICE
-            TEMPLATE_CHOICE=${TEMPLATE_CHOICE:-default}
-          fi
+          print_info "Using Catppuccin theme configuration"
         else
-          # Non-interactive mode
-          if [ "$HAS_LUA" = false ] && [ -f "$DOTFILES_DIR/nvim/personal.nolua.vim" ]; then
-            TEMPLATE_CHOICE="nolua"
-          else
-            TEMPLATE_CHOICE="default"
-          fi
+          # Fallback to default
+          TEMPLATE_CHOICE="default"
         fi
       fi
       
@@ -907,8 +895,24 @@ if [ "$SKIP_ZSH" = false ]; then
   fi
 fi
 
+# Check Node.js availability (needed for CoC) - this runs in both fresh and update modes
+if check_command node; then
+  NODE_INSTALL_SUCCESS=true
+fi
+
 # Install Neovim plugins (if not skipped)
+# First verify nvim is actually functional before attempting plugin operations
+NVIM_FUNCTIONAL=false
 if [ "$SKIP_NEOVIM" = false ] && check_command nvim; then
+  # Verify nvim can actually run
+  if nvim --version &>/dev/null; then
+    NVIM_FUNCTIONAL=true
+  else
+    print_warning "Neovim found but not functional. Skipping plugin installation."
+  fi
+fi
+
+if [ "$NVIM_FUNCTIONAL" = true ]; then
   if [ -f "${XDG_DATA_HOME:-$HOME/.local/share}/nvim/site/autoload/plug.vim" ] || [ -f "$HOME/.vim/autoload/plug.vim" ]; then
     # Check if we need to use a CoC-less configuration
     if [ -f "$HOME/.config/nvim/.no-coc" ] || [ "$NODE_INSTALL_SUCCESS" = false ]; then
@@ -984,8 +988,8 @@ inoremap <C-Space> <C-x><C-o>
   else
     print_warning "vim-plug not found. Skipping Neovim plugin installation."
   fi
-else
-  print_warning "Neovim not found or skipped. Skipping plugin installation."
+elif [ "$SKIP_NEOVIM" = false ]; then
+  print_warning "Neovim not found or not functional. Skipping plugin installation."
 fi
 
 # Install fonts (if not skipped)
@@ -1114,6 +1118,15 @@ if [ -n "${TEMP_NODEJS_SCRIPT+x}" ] || [ -n "${TEMP_NVM_SCRIPT+x}" ]; then
   done
 fi
 
+# Install GitHub CLI BEFORE building the summary so status is accurate
+if [ -f "$DOTFILES_DIR/github/install-github-cli.sh" ]; then
+  print_info "Setting up GitHub CLI..."
+  if [ "$UPDATE_MODE" = true ]; then
+    "$DOTFILES_DIR/github/install-github-cli.sh" --update --non-interactive || print_warning "GitHub CLI setup had issues (non-fatal)"
+  else
+    "$DOTFILES_DIR/github/install-github-cli.sh" --non-interactive || print_warning "GitHub CLI setup had issues (non-fatal)"
+  fi
+fi
 
 # Verify installations
 INSTALLATION_SUMMARY=""
@@ -1198,16 +1211,6 @@ if command -v gh &>/dev/null; then
   fi
 else
   INSTALLATION_SUMMARY="${INSTALLATION_SUMMARY}\n✗ GitHub CLI is not installed"
-fi
-
-# Install GitHub CLI if script exists
-if [ -f "$DOTFILES_DIR/github/install-github-cli.sh" ]; then
-  print_info "Setting up GitHub CLI..."
-  if [ "$UPDATE_MODE" = true ]; then
-    "$DOTFILES_DIR/github/install-github-cli.sh" --update --non-interactive
-  else
-    "$DOTFILES_DIR/github/install-github-cli.sh" --non-interactive
-  fi
 fi
 
 # Display status and next steps

@@ -218,29 +218,32 @@ if filereadable(expand('~/.vim/autoload/plug.vim')) || filereadable(expand('~/.l
   let g:catppuccin_flavour = get(g:, 'catppuccin_flavour', 'mocha')  " Allow override
   let g:catppuccin_transparent = get(g:, 'catppuccin_transparent', 0)  " Allow override
 
-  lua << EOF
-  -- Check if the 'catppuccin' module exists before requiring it
-  local has_catppuccin, catppuccin = pcall(require, "catppuccin")
-  if has_catppuccin then
-    catppuccin.setup({
-      flavour = vim.g.catppuccin_flavour or "mocha", -- latte, frappe, macchiato, mocha
-      background = { 
-        light = "latte",
-        dark = "mocha",
-      },
-      transparent_background = vim.g.catppuccin_transparent == 1,
-      term_colors = true,
-      integrations = {
-        coc_nvim = true,
-        nvimtree = true,
-        telescope = true,
-        treesitter = true,
-        semantic_tokens = true,
-        gitgutter = true,
-      },
-    })
-  end
+  " Only run Lua configuration if Neovim has Lua support
+  if has('nvim-0.5') && has('lua')
+    lua << EOF
+    -- Check if the 'catppuccin' module exists before requiring it
+    local has_catppuccin, catppuccin = pcall(require, "catppuccin")
+    if has_catppuccin then
+      catppuccin.setup({
+        flavour = vim.g.catppuccin_flavour or "mocha", -- latte, frappe, macchiato, mocha
+        background = {
+          light = "latte",
+          dark = "mocha",
+        },
+        transparent_background = vim.g.catppuccin_transparent == 1,
+        term_colors = true,
+        integrations = {
+          coc_nvim = true,
+          nvimtree = true,
+          telescope = true,
+          treesitter = true,
+          semantic_tokens = true,
+          gitgutter = true,
+        },
+      })
+    end
 EOF
+  endif
   
   " Apply theme - allow override from environment or personal.vim
   let g:preferred_colorscheme = get(g:, 'preferred_colorscheme', 'catppuccin')
@@ -309,15 +312,16 @@ augroup custom_settings
   autocmd!
   " Markdown-specific settings
   autocmd FileType markdown,md setlocal spell spelllang=en_us
-  autocmd FileType markdown,md call pencil#init({'wrap': 'soft'})
+  " Only call pencil#init if the plugin is available
+  autocmd FileType markdown,md if exists('*pencil#init') | call pencil#init({'wrap': 'soft'}) | endif
   autocmd FileType markdown,md setlocal conceallevel=2
 
   " Config file settings
   autocmd FileType yaml,json,toml setlocal tabstop=2 shiftwidth=2
 
-  " Auto-format on save for certain file types
-  autocmd BufWritePre *.js,*.jsx,*.ts,*.tsx,*.json,*.yaml,*.yml Neoformat
-  
+  " Auto-format on save for certain file types (only if Neoformat is available)
+  autocmd BufWritePre *.js,*.jsx,*.ts,*.tsx,*.json,*.yaml,*.yml if exists(':Neoformat') | Neoformat | endif
+
   " Auto-save when focus is lost
   autocmd FocusLost * silent! wall
 augroup END
@@ -380,9 +384,9 @@ nnoremap <leader>gb :Git blame<CR>                   " Git blame
 " -------------------------------------------------------
 
 " Telescope configuration with FZF integration
-augroup TelescopeSetup
-  autocmd!
-  if has('nvim-0.5') && has('lua')
+if has('nvim-0.5') && has('lua')
+  augroup TelescopeSetup
+    autocmd!
     autocmd VimEnter * silent! lua << EOF
       local status_ok, telescope = pcall(require, 'telescope')
       if status_ok then
@@ -396,12 +400,12 @@ augroup TelescopeSetup
             }
           }
         }
-        
+
         pcall(telescope.load_extension, 'fzf')
       end
 EOF
-  endif
-augroup END
+  augroup END
+endif
 
 " Telescope key mappings
 nnoremap <leader>fr :Telescope oldfiles<CR>          " Recently opened files (MRU)

@@ -161,28 +161,37 @@ setup_editor_aliases
 
 # Git aliases - only add what's not already in the git plugin
 if command -v git &>/dev/null; then
-  # Personal git identity - can be customized in ~/.gitconfig.local
-  GIT_USER_NAME=${GIT_USER_NAME:-"EdwardAngert"}
-  GIT_USER_EMAIL=${GIT_USER_EMAIL:-"17991901+EdwardAngert@users.noreply.github.com"}
-  
+  # Personal git identity - loaded from ~/.gitconfig.local (edit that file to set your identity)
+  # Defaults are placeholders - customize in .gitconfig.local or set GIT_USER_NAME/GIT_USER_EMAIL env vars
+  GIT_USER_NAME="${GIT_USER_NAME:-}"
+  GIT_USER_EMAIL="${GIT_USER_EMAIL:-}"
+
   # Load local git config if it exists
   if [ -f "$HOME/.gitconfig.local" ]; then
-    GIT_USER_NAME=$(git config --file "$HOME/.gitconfig.local" --get user.name 2>/dev/null || echo "$GIT_USER_NAME")
-    GIT_USER_EMAIL=$(git config --file "$HOME/.gitconfig.local" --get user.email 2>/dev/null || echo "$GIT_USER_EMAIL")
+    GIT_USER_NAME="${GIT_USER_NAME:-$(git config --file "$HOME/.gitconfig.local" --get user.name 2>/dev/null)}"
+    GIT_USER_EMAIL="${GIT_USER_EMAIL:-$(git config --file "$HOME/.gitconfig.local" --get user.email 2>/dev/null)}"
   fi
-  
+
+  # Fall back to global git config if local not set
+  if [ -z "$GIT_USER_NAME" ]; then
+    GIT_USER_NAME=$(git config --global --get user.name 2>/dev/null || echo "Your Name")
+  fi
+  if [ -z "$GIT_USER_EMAIL" ]; then
+    GIT_USER_EMAIL=$(git config --global --get user.email 2>/dev/null || echo "you@example.com")
+  fi
+
   # Personal git identity alias
   alias gitsme="git config --local user.name \"$GIT_USER_NAME\" && git config --local user.email \"$GIT_USER_EMAIL\" && echo \"Git identity set to $GIT_USER_NAME\""
-  
+
   # Compare branch to main/master
   alias gdiff="git diff \$(git rev-parse --abbrev-ref HEAD) \$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')"
-  
+
   # Git file finder
   alias gtree="git ls-tree --full-tree -r HEAD"
-  
-  # Git merge main 
+
+  # Git merge main
   alias gmm="git merge \$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')"
-  
+
   # Git ignore file
   alias gi="echo '.DS_Store\n.envrc\n.direnv\n*.log\nnode_modules\n.vscode\n.idea\n*.swp\n*.swo\n*.bak\n*.orig' >> .gitignore"
 fi
@@ -241,21 +250,23 @@ if [ -d "$HOME/.nvm" ]; then
   export NVM_DIR="$HOME/.nvm"
   [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
   [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-fi
 
-# Faster NVM usage with lazy loading
-function nvm_auto() {
-  local DEFAULT_NODE_VERSION=$(command cat "$NVM_DIR/alias/default" 2>/dev/null || echo "lts/*")
-  nvm use "$DEFAULT_NODE_VERSION" > /dev/null
-}
+  # Faster NVM usage with lazy loading - only define if nvm is actually loaded
+  if command -v nvm &>/dev/null; then
+    function nvm_auto() {
+      local DEFAULT_NODE_VERSION=$(command cat "$NVM_DIR/alias/default" 2>/dev/null || echo "lts/*")
+      nvm use "$DEFAULT_NODE_VERSION" > /dev/null 2>&1
+    }
 
-# Add node-specific commands that trigger nvm
-node_commands=("node" "npm" "npx" "yarn" "pnpm")
-for cmd in "${node_commands[@]}"; do
-  if ! command -v "$cmd" &>/dev/null; then
-    alias $cmd="nvm_auto && command $cmd"
+    # Add node-specific commands that trigger nvm (only if not already available)
+    node_commands=("node" "npm" "npx" "yarn" "pnpm")
+    for cmd in "${node_commands[@]}"; do
+      if ! command -v "$cmd" &>/dev/null; then
+        alias $cmd="nvm_auto && command $cmd"
+      fi
+    done
   fi
-done
+fi
 
 # VS Code (if installed)
 # macOS path
@@ -317,21 +328,25 @@ if ! type extract &>/dev/null; then
   }
 fi
 
-# Autocompletion for SSH hosts
-h=()
-if [[ -r ~/.ssh/config ]]; then
-  h=($h ${${${(@M)${(f)"$(cat ~/.ssh/config)"}:#Host *}#Host }:#*[*?]*})
+# Autocompletion for SSH hosts (only if ssh directory exists)
+if [ -d "$HOME/.ssh" ]; then
+  h=()
+  if [[ -r ~/.ssh/config ]]; then
+    h=($h ${${${(@M)${(f)"$(cat ~/.ssh/config)"}:#Host *}#Host }:#*[*?]*})
+  fi
+  if [[ -r ~/.ssh/known_hosts ]]; then
+    h=($h ${${${(f)"$(cat ~/.ssh/known_hosts 2>/dev/null)"}%%\ *}%%,*})
+  fi
+  if [ ${#h[@]} -gt 0 ]; then
+    zstyle ':completion:*:ssh:*' hosts $h
+    zstyle ':completion:*:scp:*' hosts $h
+  fi
 fi
-if [[ -r ~/.ssh/known_hosts ]]; then
-  h=($h ${${${(f)"$(cat ~/.ssh/known_hosts)"}%%\ *}%%,*}) 
-fi
-zstyle ':completion:*:ssh:*' hosts $h
-zstyle ':completion:*:scp:*' hosts $h
 
 # Load Powerlevel10k configuration if it exists
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
-# Load local configuration if it exists
+# Load local configuration if it exists (should be last to allow overrides)
 if [ -f "$HOME/.zshrc.local" ]; then
   source "$HOME/.zshrc.local"
 fi

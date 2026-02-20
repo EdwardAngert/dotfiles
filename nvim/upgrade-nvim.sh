@@ -122,27 +122,27 @@ install_latest_neovim() {
 update_shell_config() {
   local PATH_EXPORT='export PATH="$HOME/.local/bin:$PATH"'
   local CONFIG_UPDATED=false
-  
+
   # Try to update .zshrc.local first if it exists
   if [ -f "$HOME/.zshrc.local" ]; then
-    if ! grep -q "$PATH_EXPORT" "$HOME/.zshrc.local" 2>/dev/null; then
+    if ! grep -q '.local/bin' "$HOME/.zshrc.local" 2>/dev/null; then
       echo "$PATH_EXPORT" >> "$HOME/.zshrc.local"
       CONFIG_UPDATED=true
     fi
   # If no .zshrc.local, try .zshrc
   elif [ -f "$HOME/.zshrc" ]; then
-    if ! grep -q "$PATH_EXPORT" "$HOME/.zshrc" 2>/dev/null; then
+    if ! grep -q '.local/bin' "$HOME/.zshrc" 2>/dev/null; then
       echo "$PATH_EXPORT" >> "$HOME/.zshrc"
       CONFIG_UPDATED=true
     fi
   # Last resort, update .bashrc
   elif [ -f "$HOME/.bashrc" ]; then
-    if ! grep -q "$PATH_EXPORT" "$HOME/.bashrc" 2>/dev/null; then
+    if ! grep -q '.local/bin' "$HOME/.bashrc" 2>/dev/null; then
       echo "$PATH_EXPORT" >> "$HOME/.bashrc"
       CONFIG_UPDATED=true
     fi
   fi
-  
+
   if [ "$CONFIG_UPDATED" = true ]; then
     echo -e "${BLUE}Updated shell configuration to include $USER_BIN_DIR in PATH${NC}"
   fi

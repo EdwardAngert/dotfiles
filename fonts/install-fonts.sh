@@ -1,11 +1,14 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+# Script to install JetBrains Mono font
+set -eo pipefail
 
 # Colors
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+readonly RED='\033[0;31m'
+readonly GREEN='\033[0;32m'
+readonly YELLOW='\033[0;33m'
+readonly BLUE='\033[0;34m'
+readonly NC='\033[0m' # No Color
 
 # Helper functions
 print_info() {
@@ -24,6 +27,26 @@ print_error() {
   echo -e "${RED}ERROR:${NC} $1"
 }
 
+# Check for required dependencies
+check_dependencies() {
+  local missing_deps=()
+
+  if ! command -v curl &>/dev/null; then
+    missing_deps+=("curl")
+  fi
+
+  if ! command -v unzip &>/dev/null; then
+    missing_deps+=("unzip")
+  fi
+
+  if [ ${#missing_deps[@]} -gt 0 ]; then
+    print_error "Missing required dependencies: ${missing_deps[*]}"
+    print_info "Please install them and run this script again"
+    return 1
+  fi
+  return 0
+}
+
 # Process command line arguments
 UPDATE_MODE=false
 if [[ "$1" == "--update" ]]; then
@@ -31,13 +54,21 @@ if [[ "$1" == "--update" ]]; then
   print_info "Running in update mode - will only install missing fonts"
 fi
 
-# Create temporary directory for downloads
+# Check dependencies first
+if ! check_dependencies; then
+  exit 1
+fi
+
+# Create temporary directory for downloads with cleanup trap
 TEMP_DIR=$(mktemp -d)
+trap 'rm -rf "$TEMP_DIR"' EXIT
+
 FONT_DIR="$TEMP_DIR/fonts"
 JETBRAINS_VERSION="2.304"
 JETBRAINS_URL="https://github.com/JetBrains/JetBrainsMono/releases/download/v${JETBRAINS_VERSION}/JetBrainsMono-${JETBRAINS_VERSION}.zip"
 
-# Detect operating system
+# Detect operating system and set font directory
+# Always install fonts regardless of OS detection
 if [[ "$OSTYPE" == "darwin"* ]]; then
   OS="macOS"
   FONT_INSTALL_DIR="$HOME/Library/Fonts"
@@ -45,8 +76,22 @@ elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
   OS="Linux"
   FONT_INSTALL_DIR="$HOME/.local/share/fonts"
 else
+  # Unknown OS - try to detect best font location
   OS="Unknown"
-  print_warning "Unsupported OS detected: $OSTYPE. Font installation may not work properly."
+  print_warning "Unknown OS detected: $OSTYPE"
+
+  # Try common font directories
+  if [ -d "$HOME/Library/Fonts" ]; then
+    FONT_INSTALL_DIR="$HOME/Library/Fonts"
+  elif [ -d "$HOME/.local/share/fonts" ]; then
+    FONT_INSTALL_DIR="$HOME/.local/share/fonts"
+  elif [ -d "$HOME/.fonts" ]; then
+    FONT_INSTALL_DIR="$HOME/.fonts"
+  else
+    # Default to Linux-style location
+    FONT_INSTALL_DIR="$HOME/.local/share/fonts"
+  fi
+  print_info "Using font directory: $FONT_INSTALL_DIR"
 fi
 
 print_info "Detected OS: $OS"
@@ -100,38 +145,15 @@ else
   fi
 fi
 
-# Refresh font cache on Linux
-if [ "$OS" = "Linux" ]; then
-  print_info "Refreshing font cache..."
-  if command -v fc-cache &> /dev/null; then
-    fc-cache -f -v > /dev/null
-    print_success "Font cache refreshed."
+# Refresh font cache on Linux/Unix systems
+if [ "$OS" = "Linux" ] || [ "$OS" = "Unknown" ]; then
+  if command -v fc-cache &>/dev/null; then
+    print_info "Refreshing font cache..."
+    fc-cache -f > /dev/null 2>&1 && print_success "Font cache refreshed."
   else
-    print_warning "fc-cache not found. Attempting to install fontconfig..."
-    
-    # Try to install fontconfig (provides fc-cache)
-    if command -v apt-get &> /dev/null; then
-      sudo apt-get update -y
-      sudo apt-get install -y fontconfig
-    elif command -v dnf &> /dev/null; then
-      sudo dnf install -y fontconfig
-    elif command -v pacman &> /dev/null; then
-      sudo pacman -S --noconfirm fontconfig
-    else
-      print_warning "Could not install fontconfig. Font cache not refreshed."
-    fi
-    
-    # Try again after potential installation
-    if command -v fc-cache &> /dev/null; then
-      fc-cache -f -v > /dev/null
-      print_success "Font cache refreshed."
-    else
-      print_warning "Font cache not refreshed. You may need to log out and log back in for fonts to be recognized."
-    fi
+    print_info "fc-cache not found - fonts will be available after next login"
   fi
 fi
 
-# Clean up
-rm -rf "$TEMP_DIR"
-
+# Cleanup is handled by trap
 print_success "JetBrains Mono font installed successfully!"

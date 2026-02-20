@@ -303,41 +303,43 @@ authenticate_gh() {
   if [ "$NON_INTERACTIVE" = true ]; then
     # Non-interactive authentication with token
     print_info "Non-interactive mode: Checking for GitHub token..."
-    
+
     if [ -n "$GITHUB_TOKEN" ]; then
       echo "$GITHUB_TOKEN" | gh auth login --with-token
       if [ $? -eq 0 ]; then
         print_success "Authenticated with GitHub token"
         return 0
       else
-        print_error "Failed to authenticate with GitHub token"
-        return 1
+        print_warning "Failed to authenticate with GitHub token"
+        print_info "You can authenticate later by running: gh auth login"
+        return 0  # Return success - auth failure shouldn't fail the script
       fi
     else
-      print_warning "Non-interactive mode requires GITHUB_TOKEN environment variable"
-      print_info "GitHub CLI is installed but not authenticated"
-      return 1
+      print_info "GitHub CLI installed but not authenticated (no GITHUB_TOKEN set)"
+      print_info "To authenticate later, run: gh auth login"
+      return 0  # Return success - missing token is expected in non-interactive mode
     fi
   else
     # Interactive authentication
     print_info "Starting interactive GitHub authentication..."
     print_info "You will be prompted to authenticate with GitHub"
-    
+
     if [ -t 0 ]; then
       # Terminal is interactive
       gh auth login
-      
+
       if [ $? -eq 0 ]; then
         print_success "Successfully authenticated with GitHub!"
         return 0
       else
-        print_error "GitHub authentication failed or was cancelled"
-        return 1
+        print_warning "GitHub authentication was cancelled or failed"
+        print_info "You can authenticate later by running: gh auth login"
+        return 0  # Return success - user chose not to auth now
       fi
     else
-      print_warning "Cannot authenticate in non-interactive mode without token"
-      print_info "GitHub CLI is installed but not authenticated"
-      return 1
+      print_info "GitHub CLI installed but not authenticated (non-interactive terminal)"
+      print_info "To authenticate later, run: gh auth login"
+      return 0  # Return success
     fi
   fi
 }
@@ -345,27 +347,27 @@ authenticate_gh() {
 # Configure GitHub CLI
 configure_gh() {
   print_info "Configuring GitHub CLI..."
-  
-  # Set default git protocol to SSH
-  gh config set git_protocol ssh
-  
+
+  # Set default git protocol to SSH (ignore errors - might fail if not authenticated)
+  gh config set git_protocol ssh 2>/dev/null || true
+
   # Set editor based on preference or availability
   configure_gh_editor
-  
+
   # Set up shell completion
   configure_gh_completion
-  
-  print_success "GitHub CLI configured successfully!"
+
+  print_success "GitHub CLI configured!"
 }
 
 # Configure GitHub CLI editor
 configure_gh_editor() {
   if [ -n "$EDITOR" ]; then
-    gh config set editor "$EDITOR"
+    gh config set editor "$EDITOR" 2>/dev/null || true
   elif command -v nvim &>/dev/null; then
-    gh config set editor nvim
+    gh config set editor nvim 2>/dev/null || true
   elif command -v vim &>/dev/null; then
-    gh config set editor vim
+    gh config set editor vim 2>/dev/null || true
   fi
 }
 
@@ -412,13 +414,20 @@ main() {
   else
     handle_new_installation
   fi
-  
-  # Configure GitHub CLI (only if installed)
-  if check_gh_installed; then
+
+  # Configure GitHub CLI (only if installed and functional)
+  if check_gh_installed && gh --version &>/dev/null; then
     configure_gh
     print_success "GitHub CLI setup complete!"
+
+    # Show auth status for user awareness
+    if check_gh_auth; then
+      print_info "GitHub CLI is authenticated"
+    else
+      print_info "GitHub CLI is not authenticated. Run 'gh auth login' when ready."
+    fi
   fi
-  
+
   return 0
 }
 
@@ -426,14 +435,14 @@ main() {
 handle_existing_installation() {
   # If update mode, update
   if [ "$UPDATE_MODE" = true ]; then
-    update_gh
+    update_gh || print_warning "GitHub CLI update had issues, continuing..."
   else
     print_success "GitHub CLI is already installed!"
     gh --version
-    
-    # Authenticate if needed and requested
+
+    # Authenticate if needed and requested (but don't fail if auth fails)
     if [ "$AUTH_MODE" = true ] && ! check_gh_auth; then
-      authenticate_gh
+      authenticate_gh || true  # Ignore auth failures
     fi
   fi
 }
@@ -445,16 +454,16 @@ handle_new_installation() {
     print_info "GitHub CLI not installed. Skipping update."
     return 0
   fi
-  
+
   # Install GitHub CLI
-  install_gh || { 
-    print_error "Failed to install GitHub CLI. Exiting."
-    return 1
-  }
-  
-  # Authenticate if needed and requested
+  if ! install_gh; then
+    print_warning "Failed to install GitHub CLI. Continuing without it."
+    return 0  # Don't fail the whole script
+  fi
+
+  # Authenticate if needed and requested (but don't fail if auth fails)
   if [ "$AUTH_MODE" = true ] && ! check_gh_auth; then
-    authenticate_gh
+    authenticate_gh || true  # Ignore auth failures
   fi
 }
 
