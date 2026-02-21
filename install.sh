@@ -1032,18 +1032,15 @@ if [ "$SKIP_TERMINAL" = false ]; then
     print_info "Configuring iTerm2..."
     
     # Backup existing iTerm2 preferences if not in update mode
+    # Note: These backups are optional - iTerm2 config just points to dotfiles folder
     if [ "$SHOULD_BACKUP" = true ] && [ "$UPDATE_MODE" = false ]; then
       ITERM_PLIST="$HOME/Library/Preferences/com.googlecode.iterm2.plist"
       if [ -f "$ITERM_PLIST" ]; then
-        backup_if_exists "$ITERM_PLIST"
-        print_info "Backed up existing iTerm2 preferences"
+        backup_if_exists "$ITERM_PLIST" || print_warning "Could not backup iTerm2 plist (non-fatal)"
       fi
-      
-      ITERM_PROFILES_DIR="$HOME/Library/Application Support/iTerm2"
-      if [ -d "$ITERM_PROFILES_DIR" ]; then
-        backup_if_exists "$ITERM_PROFILES_DIR"
-        print_info "Backed up existing iTerm2 profiles"
-      fi
+
+      # Skip Application Support backup - often has locked files and isn't needed
+      # since we're just telling iTerm2 to load prefs from dotfiles folder
     fi
     
     # Configure iTerm2 to use our preferences
