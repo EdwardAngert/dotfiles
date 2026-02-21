@@ -1,0 +1,59 @@
+{
+  // Editor settings
+  "editor.fontFamily": "JetBrains Mono, Menlo, Monaco, 'Courier New', monospace",
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.formatOnSave": true,
+  "editor.renderWhitespace": "selection",
+  "editor.rulers": [
+    80,
+    120
+  ],
+  "editor.minimap.enabled": false,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  // Appearance
+  "workbench.colorTheme": "Catppuccin Mocha",
+  // Terminal settings
+  "terminal.integrated.fontSize": 12,
+  "terminal.integrated.defaultProfile.osx": "zsh",
+  "terminal.integrated.defaultProfile.linux": "zsh",
+  // File handling
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.autoSave": "onFocusChange",
+  // Privacy
+  "telemetry.telemetryLevel": "off",
+  // Remote development
+  "remote.SSH.connectTimeout": 1800,
+  // UI preferences
+  "chat.commandCenter.enabled": false,
+  // Code Spell Checker settings
+  "cSpell.enabled": true,
+  "cSpell.language": "en",
+  "cSpell.enableFiletypes": [
+    "markdown",
+    "plaintext",
+    "yaml",
+    "json",
+    "javascript",
+    "typescript",
+    "python",
+    "go",
+    "shellscript"
+  ],
+  "cSpell.diagnosticLevel": "Information",
+  "cSpell.ignorePaths": [
+    "node_modules",
+    "vscode-extension",
+    ".git",
+    "*.lock"
+  ],
+  // Markdown Table Formatter settings
+  "markdown-table-formatter.limitLastColumnLength": "Follow header row length",
+  "files.associations": {
+    "*.mdx": "markdown"
+  },
+  "claudeCode.preferredLocation": "panel"
+}

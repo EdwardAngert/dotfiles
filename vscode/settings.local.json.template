@@ -1,0 +1,25 @@
+{
+  // ==========================================================================
+  // Personal/Machine-Specific VSCode Settings
+  // ==========================================================================
+  //
+  // This file is for settings that are specific to your machine or contain
+  // personal information (like SSH remote hosts).
+  //
+  // Copy this file to your VSCode User directory as settings.local.json
+  // and customize as needed. This file is gitignored.
+  //
+  // Location:
+  //   macOS: ~/Library/Application Support/Code/User/settings.local.json
+  //   Linux: ~/.config/Code/User/settings.local.json
+  //
+  // Note: VSCode doesn't natively support settings.local.json, but you can
+  // use the "Settings Sync" extension to manage machine-specific overrides,
+  // or manually merge these settings into your settings.json.
+  // ==========================================================================
+
+  // Remote SSH platforms (add your remote hosts here)
+  // "remote.SSH.remotePlatform": {
+  //   "your-remote-host": "linux"
+  // }
+}

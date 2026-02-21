@@ -107,7 +107,7 @@ if [ -d "$EXTRACT_DIR" ]; then
     export PATH="$HOME/.local/bin:$PATH"
 
     # Add to shell config - prefer .zshrc.local if it exists, otherwise .zshrc or .bashrc
-    local PATH_EXPORT='export PATH="$HOME/.local/bin:$PATH"'
+    PATH_EXPORT='export PATH="$HOME/.local/bin:$PATH"'
     if [ -f "$HOME/.zshrc.local" ]; then
       if ! grep -q '.local/bin' "$HOME/.zshrc.local" 2>/dev/null; then
         echo "$PATH_EXPORT" >> "$HOME/.zshrc.local"
