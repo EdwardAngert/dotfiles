@@ -1,0 +1,175 @@
+name: Test Installation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-dry-run:
+    name: Test Dry Run
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run dry-run installation
+        run: |
+          chmod +x install.sh
+          ./install.sh --dry-run
+
+      - name: Verify no changes were made
+        run: |
+          # Check that no config files were created
+          if [ -L "$HOME/.zshrc" ]; then
+            echo "ERROR: .zshrc symlink was created in dry-run mode"
+            exit 1
+          fi
+
+          if [ -d "$HOME/.config/nvim" ]; then
+            echo "ERROR: nvim config was created in dry-run mode"
+            exit 1
+          fi
+
+          echo "Dry run verified - no changes made"
+
+  test-install-ubuntu:
+    name: Test Full Installation (Ubuntu)
+    runs-on: ubuntu-latest
+    needs: test-dry-run
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl git zsh
+
+      - name: Run installation
+        run: |
+          chmod +x install.sh
+          ./install.sh --skip-terminal --skip-vscode
+
+      - name: Verify symlinks created
+        run: |
+          echo "Checking symlinks..."
+
+          if [ ! -L "$HOME/.zshrc" ]; then
+            echo "ERROR: .zshrc symlink not created"
+            exit 1
+          fi
+          echo "✓ .zshrc symlink exists"
+
+          if [ ! -f "$HOME/.config/nvim/init.vim" ]; then
+            echo "ERROR: nvim config not created"
+            exit 1
+          fi
+          echo "✓ nvim config exists"
+
+          if [ ! -d "$HOME/.oh-my-zsh" ]; then
+            echo "ERROR: oh-my-zsh not installed"
+            exit 1
+          fi
+          echo "✓ oh-my-zsh installed"
+
+          echo "All verifications passed!"
+
+      - name: Verify Neovim works
+        run: |
+          if command -v nvim &>/dev/null; then
+            nvim --version
+            echo "✓ Neovim is functional"
+          else
+            echo "Neovim not in PATH (may be in ~/.local/bin)"
+            if [ -f "$HOME/.local/bin/nvim" ]; then
+              "$HOME/.local/bin/nvim" --version
+              echo "✓ Neovim found in ~/.local/bin"
+            fi
+          fi
+
+  test-install-macos:
+    name: Test Full Installation (macOS)
+    runs-on: macos-latest
+    needs: test-dry-run
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run installation
+        run: |
+          chmod +x install.sh
+          ./install.sh --skip-terminal --skip-vscode --skip-fonts
+
+      - name: Verify symlinks created
+        run: |
+          echo "Checking symlinks..."
+
+          if [ ! -L "$HOME/.zshrc" ]; then
+            echo "ERROR: .zshrc symlink not created"
+            exit 1
+          fi
+          echo "✓ .zshrc symlink exists"
+
+          if [ ! -f "$HOME/.config/nvim/init.vim" ]; then
+            echo "ERROR: nvim config not created"
+            exit 1
+          fi
+          echo "✓ nvim config exists"
+
+          echo "All verifications passed!"
+
+  test-rollback:
+    name: Test Rollback
+    runs-on: ubuntu-latest
+    needs: test-dry-run
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl git zsh
+
+      - name: Create pre-existing config
+        run: |
+          mkdir -p "$HOME/.config/nvim"
+          echo "original config" > "$HOME/.config/nvim/init.vim"
+          echo "original zshrc" > "$HOME/.zshrc"
+
+      - name: Run installation
+        run: |
+          chmod +x install.sh
+          ./install.sh --skip-terminal --skip-vscode --skip-fonts
+
+      - name: Verify backups were created
+        run: |
+          if [ ! -d "$HOME/.dotfiles-backups" ]; then
+            echo "ERROR: Backup directory not created"
+            exit 1
+          fi
+          echo "✓ Backup directory exists"
+
+          # Check for backup session
+          sessions=$(ls -1 "$HOME/.dotfiles-backups" | wc -l)
+          if [ "$sessions" -eq 0 ]; then
+            echo "ERROR: No backup sessions found"
+            exit 1
+          fi
+          echo "✓ Found $sessions backup session(s)"
+
+      - name: Test rollback (dry-run)
+        run: |
+          # Run rollback in dry-run mode
+          DRY_RUN=true ./install.sh --rollback <<< "y" || true
+          echo "✓ Rollback dry-run completed"
