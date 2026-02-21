@@ -486,6 +486,17 @@ install_neovim() {
     fi
   fi
 
+  # In dry-run mode, skip verification
+  if [[ "$DRY_RUN" == "true" ]]; then
+    install_vim_plug
+    if [[ -z "$skip_plugins" ]]; then
+      install_nvim_plugins
+      install_coc_extensions
+    fi
+    print_success "Neovim setup complete"
+    return 0
+  fi
+
   # Verify installation
   if ! check_command nvim; then
     print_error "Neovim installation failed"
