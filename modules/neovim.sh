@@ -346,6 +346,14 @@ install_vim_plug() {
 install_nvim_plugins() {
   local update_mode="${1:-}"
 
+  print_info "Installing Neovim plugins..."
+
+  # Check dry-run mode first
+  if [[ "$DRY_RUN" == "true" ]]; then
+    print_dry_run "install/update Neovim plugins"
+    return 0
+  fi
+
   if ! is_nvim_functional; then
     print_warning "Neovim not functional, skipping plugin installation"
     return 1
@@ -355,13 +363,6 @@ install_nvim_plugins() {
   if [[ ! -f "$plug_path" ]] && [[ ! -f "$HOME/.vim/autoload/plug.vim" ]]; then
     print_warning "vim-plug not found, skipping plugin installation"
     return 1
-  fi
-
-  print_info "Installing Neovim plugins..."
-
-  if [[ "$DRY_RUN" == "true" ]]; then
-    print_dry_run "install/update Neovim plugins"
-    return 0
   fi
 
   if [[ "$update_mode" == "--update" ]]; then
@@ -425,15 +426,16 @@ install_coc_extensions() {
     return 0
   fi
 
-  if ! is_nvim_functional; then
-    return 1
-  fi
-
   print_info "Installing CoC extensions..."
 
+  # Check dry-run mode before functional check
   if [[ "$DRY_RUN" == "true" ]]; then
     print_dry_run "install CoC extensions"
     return 0
+  fi
+
+  if ! is_nvim_functional; then
+    return 1
   fi
 
   if [[ "$update_mode" == "--update" ]]; then
