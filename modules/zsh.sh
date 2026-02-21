@@ -292,6 +292,12 @@ setup_p10k_config() {
 set_zsh_as_default() {
   local zsh_path
 
+  # Check dry-run mode first
+  if [[ "$DRY_RUN" == "true" ]]; then
+    print_dry_run "set Zsh as default shell"
+    return 0
+  fi
+
   # Get Zsh path
   zsh_path=$(which zsh 2>/dev/null)
 
@@ -307,11 +313,6 @@ set_zsh_as_default() {
   fi
 
   print_info "Setting Zsh as default shell..."
-
-  if [[ "$DRY_RUN" == "true" ]]; then
-    print_dry_run "set $zsh_path as default shell"
-    return 0
-  fi
 
   # Ensure Zsh is in /etc/shells
   if ! grep -q "$zsh_path" /etc/shells 2>/dev/null; then
