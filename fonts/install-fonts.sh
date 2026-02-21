@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Script to install JetBrains Mono font
+# Script to install JetBrains Mono Nerd Font (includes icons for Powerlevel10k)
 set -eo pipefail
 
 # Colors
@@ -65,17 +65,17 @@ trap 'rm -rf "$TEMP_DIR"' EXIT
 
 FONT_DIR="$TEMP_DIR/fonts"
 
-# Get latest JetBrains Mono version from GitHub API
-print_info "Fetching latest JetBrains Mono version..."
-JETBRAINS_VERSION=$(curl -s "https://api.github.com/repos/JetBrains/JetBrainsMono/releases/latest" | grep -o '"tag_name": "[^"]*"' | cut -d'"' -f4 | sed 's/^v//')
+# Get latest Nerd Fonts version from GitHub API
+print_info "Fetching latest Nerd Fonts version..."
+NERD_FONTS_VERSION=$(curl -s "https://api.github.com/repos/ryanoasis/nerd-fonts/releases/latest" | grep -o '"tag_name": "[^"]*"' | cut -d'"' -f4 | sed 's/^v//')
 
-if [ -z "$JETBRAINS_VERSION" ]; then
-  print_warning "Could not fetch latest version, using fallback v2.304"
-  JETBRAINS_VERSION="2.304"
+if [ -z "$NERD_FONTS_VERSION" ]; then
+  print_warning "Could not fetch latest version, using fallback v3.3.0"
+  NERD_FONTS_VERSION="3.3.0"
 fi
 
-JETBRAINS_URL="https://github.com/JetBrains/JetBrainsMono/releases/download/v${JETBRAINS_VERSION}/JetBrainsMono-${JETBRAINS_VERSION}.zip"
-print_info "Using JetBrains Mono v${JETBRAINS_VERSION}"
+JETBRAINS_URL="https://github.com/ryanoasis/nerd-fonts/releases/download/v${NERD_FONTS_VERSION}/JetBrainsMono.zip"
+print_info "Using JetBrains Mono Nerd Font v${NERD_FONTS_VERSION}"
 
 # Detect operating system and set font directory
 # Always install fonts regardless of OS detection
@@ -111,45 +111,45 @@ print_info "Font install directory: $FONT_INSTALL_DIR"
 mkdir -p "$FONT_INSTALL_DIR"
 
 # Download and install JetBrains Mono
-print_info "Downloading JetBrains Mono..."
+print_info "Downloading JetBrains Mono Nerd Font..."
 mkdir -p "$FONT_DIR"
 curl -L "$JETBRAINS_URL" -o "$TEMP_DIR/jetbrains-mono.zip"
 
 if [ $? -ne 0 ]; then
-  print_error "Failed to download JetBrains Mono."
+  print_error "Failed to download JetBrains Mono Nerd Font."
   rm -rf "$TEMP_DIR"
   exit 1
 fi
 
-print_info "Extracting JetBrains Mono..."
+print_info "Extracting JetBrains Mono Nerd Font..."
 unzip -q "$TEMP_DIR/jetbrains-mono.zip" -d "$FONT_DIR"
 
 if [ $? -ne 0 ]; then
-  print_error "Failed to extract JetBrains Mono."
+  print_error "Failed to extract JetBrains Mono Nerd Font."
   rm -rf "$TEMP_DIR"
   exit 1
 fi
 
-print_info "Installing JetBrains Mono fonts..."
+print_info "Installing JetBrains Mono Nerd Font..."
 
 # In update mode, check if fonts already exist
 if [ "$UPDATE_MODE" = true ]; then
-  # Check for at least one JetBrains Mono font file
-  if ls "$FONT_INSTALL_DIR/JetBrainsMono"*.ttf &>/dev/null; then
-    print_info "JetBrains Mono fonts already installed, skipping in update mode"
+  # Check for at least one JetBrains Mono Nerd Font file
+  if ls "$FONT_INSTALL_DIR/JetBrainsMonoNerdFont"*.ttf &>/dev/null; then
+    print_info "JetBrains Mono Nerd Font already installed, skipping in update mode"
   else
-    cp "$FONT_DIR/fonts/ttf/"*.ttf "$FONT_INSTALL_DIR/"
+    cp "$FONT_DIR/"*.ttf "$FONT_INSTALL_DIR/"
     if [ $? -ne 0 ]; then
-      print_error "Failed to install JetBrains Mono fonts."
+      print_error "Failed to install JetBrains Mono Nerd Font."
       rm -rf "$TEMP_DIR"
       exit 1
     fi
   fi
 else
   # Install normally in non-update mode
-  cp "$FONT_DIR/fonts/ttf/"*.ttf "$FONT_INSTALL_DIR/"
+  cp "$FONT_DIR/"*.ttf "$FONT_INSTALL_DIR/"
   if [ $? -ne 0 ]; then
-    print_error "Failed to install JetBrains Mono fonts."
+    print_error "Failed to install JetBrains Mono Nerd Font."
     rm -rf "$TEMP_DIR"
     exit 1
   fi
@@ -166,4 +166,5 @@ if [ "$OS" = "Linux" ] || [ "$OS" = "Unknown" ]; then
 fi
 
 # Cleanup is handled by trap
-print_success "JetBrains Mono font installed successfully!"
+print_success "JetBrains Mono Nerd Font installed successfully!"
+print_info "Set your terminal font to 'JetBrainsMono Nerd Font' (or 'JetBrainsMono NF')"
