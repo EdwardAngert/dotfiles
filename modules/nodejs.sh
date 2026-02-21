@@ -127,6 +127,7 @@ setup_nvm() {
 
 # Install Node.js via NVM
 # Usage: install_node_via_nvm [version]
+# shellcheck disable=SC2120
 install_node_via_nvm() {
   local version="${1:-lts/*}"
 

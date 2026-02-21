@@ -336,7 +336,8 @@ safe_remove() {
 # Returns: 0 if backup created, 1 if path didn't exist, 2 on error
 backup_if_exists() {
   local path="$1"
-  local backup_path="${path}.backup.$(date +%Y%m%d_%H%M%S)"
+  local backup_path
+  backup_path="${path}.backup.$(date +%Y%m%d_%H%M%S)"
 
   if [[ ! -e "$path" ]]; then
     print_debug "Nothing to backup (doesn't exist): $path"

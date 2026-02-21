@@ -33,12 +33,14 @@ while [[ "$#" -gt 0 ]]; do
     --no-auth) AUTH_MODE=false ;;
     --non-interactive) NON_INTERACTIVE=true ;;
     --update) UPDATE_MODE=true ;;
+    --dry-run) DRY_RUN=true ;;
     --help)
       echo "Usage: $0 [options]"
       echo "Options:"
       echo "  --no-auth           Skip authentication steps"
       echo "  --non-interactive   Run without prompting (for automated scripts)"
       echo "  --update            Only update if already installed"
+      echo "  --dry-run           Show what would be done without making changes"
       echo "  --help              Show this help message"
       exit 0
       ;;
@@ -321,6 +323,21 @@ configure_gh() {
 # ==============================================================================
 
 main() {
+  # Dry-run mode - just show what would happen
+  if [[ "$DRY_RUN" == "true" ]]; then
+    if check_command gh; then
+      print_success "GitHub CLI is already installed!"
+      gh --version
+      if [[ "$UPDATE_MODE" == "true" ]]; then
+        print_dry_run "update GitHub CLI"
+      fi
+    else
+      print_dry_run "install GitHub CLI"
+    fi
+    print_dry_run "configure GitHub CLI"
+    return 0
+  fi
+
   if check_command gh; then
     if [[ "$UPDATE_MODE" == "true" ]]; then
       update_gh

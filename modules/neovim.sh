@@ -49,6 +49,7 @@ get_nvim_version() {
 
 # Check if Neovim version meets minimum requirement
 # Usage: check_nvim_version [minimum_version]
+# shellcheck disable=SC2120
 check_nvim_version() {
   local min_version="${1:-$NVIM_MIN_VERSION}"
   local current_version

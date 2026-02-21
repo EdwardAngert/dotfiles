@@ -24,10 +24,14 @@ source "$DOTFILES_DIR/lib/network.sh"
 
 # Process command line arguments
 UPDATE_MODE=false
-if [[ "${1:-}" == "--update" ]]; then
-  UPDATE_MODE=true
-  print_info "Running in update mode - will only install missing fonts"
-fi
+while [[ "$#" -gt 0 ]]; do
+  case $1 in
+    --update) UPDATE_MODE=true; print_info "Running in update mode - will only install missing fonts" ;;
+    --dry-run) DRY_RUN=true ;;
+    *) ;;
+  esac
+  shift
+done
 
 # ==============================================================================
 # Dependency Check
@@ -108,6 +112,13 @@ install_jetbrains_mono() {
   local download_url="https://github.com/ryanoasis/nerd-fonts/releases/download/${version}/JetBrainsMono.zip"
 
   print_info "Using JetBrains Mono Nerd Font ${version}"
+
+  # Dry-run mode - just show what would happen
+  if [[ "$DRY_RUN" == "true" ]]; then
+    print_dry_run "download JetBrains Mono Nerd Font ${version}"
+    print_dry_run "install fonts to $font_install_dir"
+    return 0
+  fi
 
   # Create temp directory
   local temp_dir

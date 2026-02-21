@@ -242,11 +242,10 @@ run_installation() {
   # Fonts
   if [[ "$SKIP_FONTS" != "true" ]]; then
     print_section "Installing Fonts"
-    if [[ "$UPDATE_MODE" == "true" ]]; then
-      "$DOTFILES_DIR/fonts/install-fonts.sh" --update
-    else
-      "$DOTFILES_DIR/fonts/install-fonts.sh"
-    fi
+    local font_args=()
+    [[ "$UPDATE_MODE" == "true" ]] && font_args+=(--update)
+    [[ "$DRY_RUN" == "true" ]] && font_args+=(--dry-run)
+    "$DOTFILES_DIR/fonts/install-fonts.sh" "${font_args[@]}"
   fi
 
   # Terminal
@@ -257,13 +256,11 @@ run_installation() {
   # GitHub CLI
   if [[ -f "$DOTFILES_DIR/github/install-github-cli.sh" ]]; then
     print_section "Setting up GitHub CLI"
-    if [[ "$UPDATE_MODE" == "true" ]]; then
-      "$DOTFILES_DIR/github/install-github-cli.sh" --update --non-interactive || \
-        print_warning "GitHub CLI setup had issues (non-fatal)"
-    else
-      "$DOTFILES_DIR/github/install-github-cli.sh" --non-interactive || \
-        print_warning "GitHub CLI setup had issues (non-fatal)"
-    fi
+    local gh_args=(--non-interactive)
+    [[ "$UPDATE_MODE" == "true" ]] && gh_args+=(--update)
+    [[ "$DRY_RUN" == "true" ]] && gh_args+=(--dry-run)
+    "$DOTFILES_DIR/github/install-github-cli.sh" "${gh_args[@]}" || \
+      print_warning "GitHub CLI setup had issues (non-fatal)"
   fi
 
   # Cleanup old backups (keep last 5)
