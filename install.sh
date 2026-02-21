@@ -1093,32 +1093,35 @@ fi
 # Set zsh as default shell if it's not already (and we're not skipping zsh)
 if [ "$SKIP_ZSH" = false ] && [ "$SHELL" != "$(which zsh)" ] && check_command zsh; then
   print_info "Setting zsh as default shell..."
-  if [ -f "$(which zsh)" ]; then
-    # Try to change shell without sudo first
-    if grep -q "$(which zsh)" /etc/shells; then
-      chsh -s "$(which zsh)" 2>/dev/null || true
-    else
-      # If we can, add zsh to /etc/shells
+  ZSH_PATH=$(which zsh)
+  CHSH_SUCCESS=false
+
+  if [ -f "$ZSH_PATH" ]; then
+    # Ensure zsh is in /etc/shells
+    if ! grep -q "$ZSH_PATH" /etc/shells 2>/dev/null; then
       if command -v sudo >/dev/null 2>&1; then
-        echo "$(which zsh)" | sudo tee -a /etc/shells 2>/dev/null || true
-        chsh -s "$(which zsh)" 2>/dev/null || true
+        echo "$ZSH_PATH" | sudo tee -a /etc/shells >/dev/null 2>&1 || true
       fi
     fi
-    
-    # Check if we succeeded in changing the shell
-    if [ "$SHELL" = "$(which zsh)" ]; then
+
+    # Try to change shell
+    if grep -q "$ZSH_PATH" /etc/shells 2>/dev/null; then
+      if chsh -s "$ZSH_PATH" 2>/dev/null; then
+        CHSH_SUCCESS=true
+      fi
+    fi
+
+    if [ "$CHSH_SUCCESS" = true ]; then
       print_success "Default shell changed to zsh"
+      print_info "Log out and back in (or reboot) for the shell change to take effect"
+      print_info "Or start zsh now by typing: zsh"
     else
-      print_warning "Could not automatically change default shell to zsh. You can do this manually later with: chsh -s $(which zsh)"
+      print_warning "Could not automatically change default shell to zsh"
+      print_info "You can do this manually with: chsh -s $ZSH_PATH"
       print_info "For now, you can start zsh manually with: zsh"
-      
-      # Create a flag in the user's home directory to launch zsh on terminal start (in bash profile)
-      echo '[ -f "$(which zsh)" ] && exec "$(which zsh)" -l' >> "$HOME/.bash_profile"
-      echo '[ -f "$(which zsh)" ] && exec "$(which zsh)" -l' >> "$HOME/.bashrc"
-      print_info "Added zsh autostart to .bash_profile and .bashrc"
     fi
   else
-    print_error "Could not change default shell to zsh"
+    print_error "Could not find zsh binary"
   fi
 fi
 
