@@ -1094,7 +1094,6 @@ fi
 if [ "$SKIP_ZSH" = false ] && [ "$SHELL" != "$(which zsh)" ] && check_command zsh; then
   print_info "Setting zsh as default shell..."
   ZSH_PATH=$(which zsh)
-  CHSH_SUCCESS=false
 
   if [ -f "$ZSH_PATH" ]; then
     # Ensure zsh is in /etc/shells
@@ -1104,21 +1103,23 @@ if [ "$SKIP_ZSH" = false ] && [ "$SHELL" != "$(which zsh)" ] && check_command zs
       fi
     fi
 
-    # Try to change shell
+    # Check if zsh is in /etc/shells before attempting chsh
     if grep -q "$ZSH_PATH" /etc/shells 2>/dev/null; then
-      if chsh -s "$ZSH_PATH" 2>/dev/null; then
-        CHSH_SUCCESS=true
+      # Use sudo chsh to avoid password prompt hanging
+      # This works on most Linux systems where user has sudo access
+      if sudo chsh -s "$ZSH_PATH" "$USER" 2>/dev/null; then
+        print_success "Default shell changed to zsh"
+        print_info "Log out and back in (or reboot) for the shell change to take effect"
+        print_info "Or start zsh now by typing: zsh"
+      else
+        print_warning "Could not automatically change default shell"
+        print_info "Run manually: sudo chsh -s $ZSH_PATH $USER"
+        print_info "Or start zsh now by typing: zsh"
       fi
-    fi
-
-    if [ "$CHSH_SUCCESS" = true ]; then
-      print_success "Default shell changed to zsh"
-      print_info "Log out and back in (or reboot) for the shell change to take effect"
-      print_info "Or start zsh now by typing: zsh"
     else
-      print_warning "Could not automatically change default shell to zsh"
-      print_info "You can do this manually with: chsh -s $ZSH_PATH"
-      print_info "For now, you can start zsh manually with: zsh"
+      print_warning "zsh not in /etc/shells, cannot change default shell"
+      print_info "Add it manually: echo $ZSH_PATH | sudo tee -a /etc/shells"
+      print_info "Then run: sudo chsh -s $ZSH_PATH $USER"
     fi
   else
     print_error "Could not find zsh binary"
