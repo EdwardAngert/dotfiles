@@ -1,188 +1,274 @@
 # Dotfiles
 
-Personal configuration files for VSCode, Neovim, and Zsh. These dotfiles are designed to work on both macOS and Linux systems and will automatically install required dependencies.
+Personal configuration files for development environments. These dotfiles provide a consistent, productive setup across macOS and Linux systems with automatic dependency installation.
 
-## Contents
+## Requirements
 
-- `vscode/`: VS Code configuration
-- `nvim/`: Neovim configuration
-- `zsh/`: Zsh configuration
-- `iterm/`: iTerm2 configuration (macOS)
-- `terminal/`: Terminal configurations for Linux
-- `fonts/`: Programming fonts installation scripts
-- `install.sh`: Installation script that installs dependencies and creates symlinks
+| Requirement | Version | Purpose |
+|-------------|---------|---------|
+| bash | 4.0+ | Installation scripts |
+| git | 2.0+ | Version control, plugin installation |
+| curl | any | Downloading files |
+| Neovim | 0.9.0+ | Lua plugins, Treesitter (auto-installed) |
+| Node.js | 16.0+ | Neovim CoC completion (auto-installed) |
 
-## Features
+## Platform Support
 
-- 🚀 **Automatic installation** of all required dependencies
-- 🔄 **Cross-platform** support for macOS and major Linux distributions
-- 🧩 **Oh My Zsh** with useful plugins pre-configured
-- 🎨 **Neovim** with modern plugins and Catppuccin Mocha theme
-- 🧰 **VSCode** settings with Catppuccin Mocha theme
-- 🖥️ **Terminal configurations** for iTerm2 (macOS) and Linux terminals
-- 🔤 **JetBrains Mono font** installation for better readability
-- 🌈 **Consistent theming** across all tools with Catppuccin
-- 🔁 **Update system** for keeping dotfiles current with `--update` and `--pull` options
-- ⏱️ **Automated updates** via cron job to keep everything up-to-date
-- 🛠️ **Fallback configurations** for environments with restricted dependencies
-- 🐙 **GitHub CLI** installation and configuration for streamlined Git workflows
+| Platform | Package Manager | Status |
+|----------|-----------------|--------|
+| macOS | Homebrew | Full support |
+| Ubuntu/Debian | apt | Full support |
+| Fedora/RHEL | dnf | Full support |
+| Arch Linux | pacman | Full support |
+| Alpine Linux | apk | Partial support |
+| Other Linux | Homebrew | Fallback |
 
-## Installation
-
-1. Clone this repository:
-   ```bash
-   git clone https://github.com/yourusername/dotfiles.git
-   cd dotfiles
-   ```
-
-2. Make the installation script executable:
-   ```bash
-   chmod +x install.sh
-   ```
-
-3. Run the installation script:
-   ```bash
-   ./install.sh
-   ```
-
-### Advanced Installation Options
-
-The installation script supports various options to customize the installation:
+## Quick Start
 
 ```bash
-./install.sh --help
+# Clone the repository
+git clone https://github.com/yourusername/dotfiles.git
+cd dotfiles
+
+# Run the installer
+./install.sh
 ```
 
-Available options:
-- `--skip-fonts`: Skip font installation
-- `--skip-neovim`: Skip Neovim configuration
-- `--skip-zsh`: Skip Zsh configuration
-- `--skip-vscode`: Skip VSCode configuration
-- `--skip-terminal`: Skip terminal configuration
-- `--update`: Update mode - skip dependency installation, only update configs
-- `--pull`: Pull latest changes from git repository before installing
-- `--setup-auto-update`: Configure automatic weekly updates via cron
+That's it! The installer will:
+- Detect your OS and package manager
+- Install all required dependencies
+- Set up Zsh with Oh My Zsh and Powerlevel10k
+- Configure Neovim with plugins
+- Install fonts and terminal themes
+- Create symlinks for all configurations
 
-For example, to install everything except fonts:
-```bash
-./install.sh --skip-fonts
+## Architecture
+
+```
+dotfiles/
+├── install.sh              # Main orchestrator (~200 lines)
+├── lib/                    # Shared libraries
+│   ├── utils.sh            # Colors, printing, file operations
+│   ├── network.sh          # Downloads with retry, checksums
+│   └── backup.sh           # Backup registry for rollback
+├── modules/                # Feature modules
+│   ├── package-managers.sh # Homebrew, apt, dnf, pacman, apk
+│   ├── dependencies.sh     # git, curl, build tools
+│   ├── nodejs.sh           # Node.js via package manager or NVM
+│   ├── neovim.sh           # Neovim binary + vim-plug
+│   ├── zsh.sh              # Zsh, Oh My Zsh, plugins, p10k
+│   ├── link-configs.sh     # Symlink management
+│   ├── vscode.sh           # VSCode settings + extensions
+│   └── terminal.sh         # iTerm2, GNOME Terminal, Konsole
+├── nvim/                   # Neovim configuration
+├── zsh/                    # Zsh configuration
+├── vscode/                 # VSCode settings (template-based)
+├── fonts/                  # Font installation
+├── terminal/               # Terminal themes
+├── iterm/                  # iTerm2 configuration (macOS)
+├── github/                 # GitHub CLI setup
+└── tests/                  # Test infrastructure
 ```
 
-To update an existing installation:
+## Installation Options
+
+| Flag | Description |
+|------|-------------|
+| `--help` | Show help message |
+| `--skip-fonts` | Skip font installation |
+| `--skip-neovim` | Skip Neovim configuration |
+| `--skip-zsh` | Skip Zsh configuration |
+| `--skip-vscode` | Skip VSCode configuration |
+| `--skip-terminal` | Skip terminal configuration |
+| `--update` | Update mode - skip dependency installation |
+| `--pull` | Pull latest changes before installing |
+| `--dry-run` | Preview changes without making them |
+| `--rollback` | Rollback to previous configuration |
+| `--setup-auto-update` | Configure weekly automatic updates |
+
+### Examples
+
 ```bash
+# Fresh installation
+./install.sh
+
+# Update existing installation
 ./install.sh --update
-```
 
-To pull the latest changes and update:
-```bash
+# Pull latest and update
 ./install.sh --pull --update
-```
 
-To set up automated weekly updates:
-```bash
+# Preview what would change
+./install.sh --dry-run
+
+# Skip specific components
+./install.sh --skip-fonts --skip-vscode
+
+# Rollback last changes
+./install.sh --rollback
+
+# Set up automatic weekly updates
 ./install.sh --setup-auto-update
 ```
-
-The script will:
-
-- Install package managers if needed (Homebrew, apt, dnf, pacman)
-- Install and configure Zsh, Oh My Zsh, and plugins
-- Install Neovim and vim-plug
-- Automatically back up any existing configurations (with .backup suffix)
-- Create all necessary symlinks
-- Set Zsh as the default shell
 
 ## What Gets Installed
 
-The installation script automatically installs:
-
+### Shell
 - **Zsh** - Modern shell with advanced features
-- **Oh My Zsh** - Framework for managing Zsh configuration
-- **Zsh plugins** - autosuggestions, syntax-highlighting, and more
-- **Neovim** - Improved Vim editor
-- **vim-plug** - Plugin manager for Neovim
-- **JetBrains Mono** - Programming font with ligatures
-- **VSCode Extensions** - Catppuccin theme for consistent styling
-- **GitHub CLI** - Command-line tool for GitHub workflows
-- **Terminal Configurations**:
-  - iTerm2 Configuration (macOS)
-  - GNOME Terminal, Konsole and Alacritty (Linux)
+- **Oh My Zsh** - Zsh configuration framework
+- **Powerlevel10k** - Fast, customizable prompt theme
+- **zsh-autosuggestions** - Fish-like autosuggestions
+- **zsh-syntax-highlighting** - Syntax highlighting for commands
+
+### Editor
+- **Neovim 0.9+** - Modern Vim with Lua support
+- **vim-plug** - Plugin manager
+- **CoC.nvim** - Intellisense engine (requires Node.js)
+- **Telescope** - Fuzzy finder
+- **Treesitter** - Better syntax highlighting
+
+### Tools
+- **tig** - Text-mode interface for Git
+- **ripgrep** - Fast search tool
+- **fd** - Fast file finder
+- **fzf** - Fuzzy finder
+- **GitHub CLI** - GitHub from the command line
+
+### Fonts & Themes
+- **JetBrains Mono Nerd Font** - Programming font with icons
+- **Catppuccin Mocha** - Consistent theme across all tools
+
+## Uninstall / Rollback
+
+### Rollback Recent Changes
+
+The installer creates backups in `~/.dotfiles-backups/`. To rollback:
+
+```bash
+./install.sh --rollback
+```
+
+This will:
+1. List available backup sessions
+2. Show what will be restored
+3. Ask for confirmation
+4. Restore previous configurations
+
+### Manual Uninstall
+
+To remove dotfiles configurations:
+
+```bash
+# Remove symlinks
+rm -f ~/.zshrc ~/.config/nvim/init.vim
+
+# Restore backups (if any)
+ls ~/.dotfiles-backups/
+
+# Remove Oh My Zsh
+rm -rf ~/.oh-my-zsh
+
+# Change shell back to bash
+chsh -s /bin/bash
+```
 
 ## Customization
 
+### Local Configuration Files
+
+These files are for machine-specific settings and are not tracked in git:
+
+| File | Purpose |
+|------|---------|
+| `~/.zshrc.local` | Local Zsh customizations |
+| `~/.config/nvim/personal.vim` | Personal Neovim settings |
+| `~/.gitconfig.local` | Git user identity |
+
+### Neovim Templates
+
+During installation, one of these templates is automatically selected based on your system:
+
+- **personal.catppuccin.vim** - Full setup with Catppuccin theme (default)
+- **personal.monokai.vim** - Monokai theme variant
+- **personal.nococ.vim** - For systems without Node.js
+- **personal.nolua.vim** - For older Neovim without Lua support
+
 ### VSCode
 
-Edit `vscode/settings.json` to customize your VSCode settings.
+VSCode settings use a template system:
+- `vscode/settings.json.template` - Base settings (tracked)
+- `vscode/settings.local.json.template` - Personal settings template
 
-### Neovim
-
-Edit `nvim/init.vim` to customize your Neovim configuration.
-
-During installation, you can choose from several Neovim configuration templates:
-- **Default**: Basic template with minimal customization
-- **Catppuccin**: Configured with the Catppuccin color theme and additional plugins
-- **Monokai**: Configured with the Monokai color theme and additional plugins
-
-These templates are copied to `~/.config/nvim/personal.vim` and loaded automatically by the main configuration.
-
-### Zsh
-
-Edit `zsh/.zshrc` to customize your Zsh configuration.
+Personal settings (SSH hosts, etc.) should go in `settings.local.json`.
 
 ## Updating
 
-There are several ways to update your dotfiles installation:
-
-### Updating on an Existing Machine
-
-If you already have the dependencies installed and just want to update your configurations:
+### Manual Update
 
 ```bash
-./install.sh --update
-```
-
-This will skip dependency installation and only update your configurations.
-
-### Pulling Latest Changes
-
-To get the latest changes from the repository and apply them:
-
-```bash
+cd /path/to/dotfiles
 ./install.sh --pull --update
 ```
 
-This will pull the latest changes from the git repository and then update your configurations.
+### Automatic Updates
 
-### Automated Updates
-
-You can set up a weekly cron job to automatically update your dotfiles:
+Set up weekly automatic updates:
 
 ```bash
 ./install.sh --setup-auto-update
 ```
 
-This will create a weekly cron job that runs every Sunday at noon to pull the latest changes and update your configurations. A script will be created at `~/.local/bin/update-dotfiles.sh` that you can also run manually anytime.
+This creates a cron job that runs every Sunday at noon.
 
-## Manual Installation
+## Troubleshooting
 
-If you prefer to install dependencies manually:
+### Fonts not displaying correctly
 
-### Oh My Zsh
+1. Ensure JetBrains Mono Nerd Font is installed:
+   ```bash
+   ./fonts/install-fonts.sh
+   ```
+2. Set your terminal font to "JetBrainsMono Nerd Font"
+3. Restart your terminal
+
+### Neovim plugins not working
+
+1. Check Node.js is installed: `node --version`
+2. Reinstall plugins:
+   ```bash
+   nvim +PlugInstall +qall
+   ```
+3. Check for errors: `nvim +checkhealth`
+
+### Zsh not default shell
+
 ```bash
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+# Add zsh to allowed shells
+echo $(which zsh) | sudo tee -a /etc/shells
+
+# Change default shell
+chsh -s $(which zsh)
+
+# Log out and back in
 ```
 
-### Oh My Zsh Plugins
-```bash
-# Install zsh-autosuggestions
-git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
+### Dry run shows unexpected changes
 
-# Install zsh-syntax-highlighting
-git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
+Use `--dry-run` to preview:
+```bash
+./install.sh --dry-run
 ```
 
-### vim-plug
-```bash
-curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs \
-    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-```
+This shows what would change without making any modifications.
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run shellcheck: `./tests/run_tests.sh`
+5. Submit a pull request
+
+## License
+
+MIT License - feel free to use and modify as you wish.

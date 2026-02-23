@@ -1,1 +1,18 @@
 **/CLAUDE.local.md
+
+# VSCode personal settings (use templates instead)
+vscode/settings.json
+vscode/settings.local.json
+
+# Backup files
+*.backup
+*.backup.*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
