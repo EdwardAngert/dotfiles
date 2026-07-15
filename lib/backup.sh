@@ -202,7 +202,7 @@ backup_with_registry() {
 
   # Generate backup path
   # Convert absolute path to relative for storage
-  backup_name="${path#$HOME/}"
+  backup_name="${path#"$HOME"/}"
   backup_name="${backup_name//\//__}"  # Replace / with __
   backup_path="${BACKUP_SESSION_DIR}/${backup_name}"
 

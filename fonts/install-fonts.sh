@@ -108,7 +108,6 @@ install_jetbrains_mono() {
     version="v3.3.0"
   fi
 
-  local version_number="${version#v}"
   local download_url="https://github.com/ryanoasis/nerd-fonts/releases/download/${version}/JetBrainsMono.zip"
 
   print_info "Using JetBrains Mono Nerd Font ${version}"
