@@ -218,11 +218,11 @@ run_source_test() {
 
   local failed=0
 
-  # Test sourcing all libs
+  # Test sourcing all libs (each depends on lib/utils.sh being loaded first)
   for lib in "${libs[@]}"; do
     local lib_path="$DOTFILES_DIR/$lib"
     if [[ -f "$lib_path" ]]; then
-      if bash -c "source '$lib_path'" 2>/dev/null; then
+      if bash -c "source '$DOTFILES_DIR/lib/utils.sh'; source '$lib_path'" 2>/dev/null; then
         print_success "$lib"
       else
         print_error "$lib"

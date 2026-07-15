@@ -28,9 +28,6 @@ fi
 # NVM directory
 export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
 
-# Track Node.js installation status
-NODE_INSTALL_SUCCESS=false
-
 # ==============================================================================
 # Version Checking
 # ==============================================================================
@@ -156,7 +153,6 @@ install_node_via_nvm() {
   if nvm install "$version" >/dev/null 2>&1; then
     nvm use "$version" >/dev/null 2>&1
     print_success "Node.js installed via NVM: $(node --version)"
-    NODE_INSTALL_SUCCESS=true
     return 0
   else
     print_error "Failed to install Node.js via NVM"
@@ -219,7 +215,6 @@ install_node_via_package_manager() {
 
   if [[ $result -eq 0 ]] && check_command node; then
     print_success "Node.js installed: $(node --version)"
-    NODE_INSTALL_SUCCESS=true
     return 0
   fi
 
@@ -240,7 +235,6 @@ install_nodejs() {
     local version
     version=$(get_node_version)
     print_success "Node.js is already installed: v$version"
-    NODE_INSTALL_SUCCESS=true
     return 0
   fi
 
@@ -265,7 +259,6 @@ install_nodejs() {
   mkdir -p "$HOME/.config/nvim"
   touch "$HOME/.config/nvim/.no-coc"
 
-  NODE_INSTALL_SUCCESS=false
   return 1
 }
 

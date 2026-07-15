@@ -75,6 +75,9 @@ select_nvim_template() {
   elif [[ "$has_catppuccin" == "true" ]]; then
     template="personal.catppuccin.vim"
     print_info "Using Catppuccin theme configuration"
+  elif [[ "$has_monokai" == "true" ]]; then
+    template="personal.monokai.vim"
+    print_info "Using Monokai theme configuration"
   elif [[ "$has_default" == "true" ]]; then
     template="personal.vim.template"
   fi

@@ -27,10 +27,6 @@
   "telemetry.telemetryLevel": "off",
   // Remote development
   "remote.SSH.connectTimeout": 1800,
-  "remote.SSH.remotePlatform": {
-    "coder-vscode.dev.coder.com--edward--coder-claude": "linux",
-    "coder-vscode.dev.coder.com--edward--coder-claude.dev": "linux"
-  },
   // UI preferences
   "chat.commandCenter.enabled": false,
   // Code Spell Checker settings
